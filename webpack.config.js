@@ -1,5 +1,5 @@
 const path = require('path')
-// const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = (env) => {
@@ -22,15 +22,21 @@ module.exports = (env) => {
     },
     module: {
       rules: [
-        // {
-        //     enforce: 'pre',
-        //     test: /\.(js|jsx)$/,
-        //     exclude: /node_modules/,
-        //     loader: 'eslint-loader',
-        //     options: {
-        //         emitWarning: true,
-        //     },
-        // },
+        {
+          test: /\.scss$/,
+          use: [
+            'style-loader',
+            MiniCssExtractPlugin.loader,
+            'css-loader',
+            {
+              loader: 'postcss-loader',
+              options: {
+                plugins: () => [require('autoprefixer')],
+              },
+            },
+            'sass-loader'
+          ],
+        },
         {
           test: /\.js$/,
           exclude: /node_modules/,
@@ -55,7 +61,7 @@ module.exports = (env) => {
         //       }
         //   }]
         // }
-      ]
+      ],
     },
     plugins: [
       new HtmlWebpackPlugin({
@@ -63,9 +69,9 @@ module.exports = (env) => {
         template: path.resolve(__dirname, './src/index.html'),
         hash: true,
       }),
-      // new MiniCssExtractPlugin({
-      //   filename: '[name].[contenthash].css'
-      // })
+      new MiniCssExtractPlugin({
+        filename: '[name].css'
+      })
     ],
     devServer: {
       contentBase: path.resolve(__dirname, './dist'),

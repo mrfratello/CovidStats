@@ -6,7 +6,74 @@
   <title>Covid Stats Russia</title>
 </head>
 <body>
-  <h1>Статистика заражения инфекцией Covid-19 в России</h1>
-  <p>Данные взяты с ресурса <a href="https://covid.2gis.ru" target="_blank">2GIS</a></p>
+  <div class="container-md">
+    <h1>Статистика заражения инфекцией Covid-19 в России</h1>
+    <p>Данные взяты с ресурса <a href="https://covid.2gis.ru" target="_blank">2GIS</a></p>
+  </div>
+  <div class="container-fluid">
+    <div class="row align-items-center">
+      <div class="col">
+        <div id="chart">
+          <div class="loading">
+            <div class="loading-content">
+              Загрузка данных ...
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-auto">
+        <h4>Тип графика</h4>
+        <div class="form-check">
+          <input
+            type="radio"
+            class="form-check-input"
+            name="type"
+            value="all"
+            id="all"
+            checked
+            >
+          <label for="all" class="form-check-label">
+            Количество нарастающим итогом
+          </label>
+        </div>
+        <div class="form-check">
+          <input
+            type="radio"
+            class="form-check-input"
+            name="type"
+            value="period"
+            id="period"
+            >
+          <label for="period" class="form-check-label">
+            Количество за день
+          </label>
+        </div>
+        <div class="form-check">
+          <input
+            type="radio"
+            class="form-check-input"
+            name="type"
+            value="periodOffset"
+            id="periodOffset"
+            >
+          <label for="periodOffset" class="form-check-label">
+            Смещение выздоровивших на 2 недели
+          </label>
+        </div>
+        <div class="form-check">
+          <input
+            type="radio"
+            class="form-check-input"
+            name="type"
+            value="allSicks"
+            id="allSicks"
+            >
+          <label for="allSicks" class="form-check-label">
+            Общее количество больных
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
