@@ -74,6 +74,7 @@ export default class Chart {
 
   renderAxis() {
     this.casesAxis = axisLeft()
+      .tickSizeOuter(0)
       .scale(this.scale)
 
     this.svg.append('g')
@@ -81,9 +82,19 @@ export default class Chart {
       .attr('transform', `translate(${this.paddingLeft}, 0)`)
       .call(this.casesAxis)
 
+    const ticksTime = 6
+    const dataLength = this.dataset.length
+    const divisorTime = Math.ceil(dataLength / ticksTime)
+    const offsetIndexTime = Math.floor(dataLength % Math.floor(dataLength / divisorTime))
     const timeAxis = axisBottom()
       .scale(this.scales.time)
-      .ticks(0)
+      .tickSize(0)
+      .tickPadding(10)
+      .tickFormat((value, i) => (
+        (i + offsetIndexTime) % divisorTime
+          ? ''
+          : value
+      ))
 
     this.svg.append('g')
       .attr('transform', `translate(0, ${this.height - this.paddingBottom})`)
