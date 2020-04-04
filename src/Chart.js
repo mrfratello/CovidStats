@@ -4,12 +4,14 @@ import { scaleBand, scaleLinear, scalePow } from 'd3-scale'
 import { axisLeft, axisBottom } from 'd3-axis'
 import { shortDate } from './format/date'
 import Dataset from './Dataset'
+import Tooltip from './Tooltip'
 import transition from './transition'
 import {
   ALL_TYPE,
   PERIOD_TYPE,
   PERIOD_OFFSET_TYPE,
   ALL_SICKS_TYPE,
+  valueByType,
 } from './constants'
 
 const scaleByType = {
@@ -19,18 +21,11 @@ const scaleByType = {
   [ALL_SICKS_TYPE]: 'moment',
 }
 
-const valueByType = {
-  [ALL_TYPE]: (prop, item, scale) => scale(item[prop]),
-  [PERIOD_TYPE]: (prop, item, scale) => scale(item[`${prop}Day`]),
-  [PERIOD_OFFSET_TYPE]: (prop, item, scale) => scale(item[`${prop}Day`]),
-  [ALL_SICKS_TYPE]: (prop, item, scale) => scale(item[`${prop}Moment`]),
-}
-
 export default class Chart {
-  paddingLeft = 50
-  paddingRight = 30
-  paddingBottom = 30
-  paddingTop = 10
+  marginLeft = 50
+  marginRight = 30
+  marginBottom = 30
+  marginTop = 42
   svg = null
   type = ALL_TYPE
   scaleType = 'linear'
@@ -42,13 +37,15 @@ export default class Chart {
     const dataset = new Dataset()
     dataset.request()
       .then((data) => { this.render(data) })
+
+      this.tooltip = new Tooltip(this.container)
   }
 
   updateSizes() {
     this.width = this.container.node().clientWidth
     this.height = this.container.node().clientHeight
-    this.innerHeight = this.height - this.paddingBottom - this.paddingTop
-    this.innerWidth = this.width - this.paddingLeft - this.paddingRight
+    this.innerHeight = this.height - this.marginBottom - this.marginTop
+    this.innerWidth = this.width - this.marginLeft - this.marginRight
   }
 
   initExtremums(data) {
@@ -67,18 +64,18 @@ export default class Chart {
   initScales(data) {
     const cases = scaleLinear()
       .domain([0, this.max.cases])
-      .range([this.height - this.paddingBottom, this.paddingTop])
+      .range([this.height - this.marginBottom, this.marginTop])
 
     const casesLog = scalePow()
       .exponent(0.4)
       .domain([0, this.max.cases])
-      .range([this.height - this.paddingBottom, this.paddingTop])
+      .range([this.height - this.marginBottom, this.marginTop])
 
     this.scale = cases
     this.scales = {
       time: scaleBand()
         .domain(data.map((item) => shortDate(item.date)))
-        .range([this.paddingLeft, this.width - this.paddingRight])
+        .range([this.marginLeft, this.width - this.marginRight])
         .padding(0.1),
       linear: {
         cases,
@@ -100,7 +97,7 @@ export default class Chart {
 
     this.svg.append('g')
       .classed('cases_axis', true)
-      .attr('transform', `translate(${this.paddingLeft}, 0)`)
+      .attr('transform', `translate(${this.marginLeft}, 0)`)
       .call(this.casesAxis)
 
     const ticksTime = 6
@@ -118,11 +115,39 @@ export default class Chart {
       ))
 
     this.svg.append('g')
-      .attr('transform', `translate(0, ${this.height - this.paddingBottom})`)
+      .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
       .call(timeAxis)
   }
 
   initBars() {
+    const me = this
+    this.overBars = this.svg
+      .append('g')
+        .selectAll('.overBar')
+        .data(this.dataset, ({ date }) => date)
+        .enter()
+        .append('rect')
+          .classed('overBar', true)
+          .attr('x', ({ date }) => this.scales.time(shortDate(date)))
+          .attr('y', () => this.scale.range()[1])
+          .attr('width', this.scales.time.bandwidth())
+          .attr('height', () => this.innerHeight)
+          .on('mouseover', function(data, index) {
+            const rect = select(this)
+            me.tooltip.show({
+              data,
+              right: index > me.dataset.length / 2,
+              type: me.type,
+              rect: {
+                left: +rect.attr('x'),
+                right: me.width - (+rect.attr('x') + +rect.attr('width')),
+              }
+            })
+          })
+          .on('mouseout', () => {
+            me.tooltip.hide()
+          })
+
     this.cases = this.svg.append('g')
       .classed('cases', true)
     this.cases.selectAll('.caseBar')
@@ -162,8 +187,9 @@ export default class Chart {
 
   render(data) {
     this.dataset = data
+    this.container.select('.loading')
+      .remove()
     this.svg = this.container
-      .html('')
       .append('svg')
       .classed('chart', true)
       .style('height', this.height)
@@ -180,18 +206,18 @@ export default class Chart {
     this.cases.selectAll('.caseBar')
       .data(this.dataset, ({ date }) => date)
       .transition(transition)
-      .attr('y', (item) => value('cases', item, this.scale))
-      .attr('height', (item) => this.height - this.paddingBottom - value('cases', item, this.scale))
+      .attr('y', (item) => this.scale(value('cases', item)))
+      .attr('height', (item) => this.height - this.marginBottom - this.scale(value('cases', item)))
     this.recover.selectAll('.recoverBar')
       .data(this.dataset, ({ date }) => date)
       .transition(transition)
-      .attr('y', (item) => value('recover', item, this.scale))
-      .attr('height', (item) => this.height - this.paddingBottom - value('recover', item, this.scale))
+      .attr('y', (item) => this.scale(value('recover', item)))
+      .attr('height', (item) => this.height - this.marginBottom - this.scale(value('recover', item)))
     this.deaths.selectAll('.deathsBar')
       .data(this.dataset, ({ date }) => date)
       .transition(transition)
-      .attr('y', (item) => value('deaths', item, this.scale))
-      .attr('height', (item) => this.height - this.paddingBottom - value('deaths', item, this.scale))
+      .attr('y', (item) => this.scale(value('deaths', item)))
+      .attr('height', (item) => this.height - this.marginBottom - this.scale(value('deaths', item)))
   }
 
   updateAxis() {

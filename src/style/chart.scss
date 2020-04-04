@@ -2,22 +2,63 @@ $cases-color: #ffcc33;
 $recover-color: #33cc99;
 $deaths-color: #ff6666;
 
+#chart {
+  position: relative;
+}
+
 .chart {
+  .overBar {
+    fill: transparent;
+
+    &:hover {
+      fill: #f6f6f6;
+    }
+  }
+
   .cases {
     .caseBar {
       fill: $cases-color;
+      pointer-events: none;
     }
   }
 
   .recover {
     .recoverBar {
       fill: $recover-color;
+      pointer-events: none;
     }
   }
 
   .deaths {
     .deathsBar {
       fill: $deaths-color;
+      pointer-events: none;
     }
+  }
+}
+
+.chart-tooltip {
+  position: absolute;
+  display: none;
+  z-index: 100;
+  font-size: 12px;
+  line-height: 1;
+  background: rgba(255, 255, 255, .8);
+  padding: 3px;
+  text-align: right;
+  top: 0;
+
+  &.active {
+    display: block;
+  }
+
+  .cases {
+    color: $cases-color;
+  }
+  .recover {
+    color: $recover-color;
+  }
+  .deaths {
+    color: $deaths-color;
   }
 }
