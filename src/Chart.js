@@ -1,6 +1,6 @@
 import { max } from 'd3-array'
 import { select } from 'd3-selection'
-import { scaleBand, scaleLinear } from 'd3-scale'
+import { scaleBand, scaleLinear, scalePow } from 'd3-scale'
 import { axisLeft, axisBottom } from 'd3-axis'
 import { shortDate } from './format/date'
 import transition from './transition'
@@ -32,6 +32,7 @@ export default class Chart {
   paddingTop = 10
   svg = null
   type = ALL_TYPE
+  scaleType = 'linear'
 
   constructor(selector) {
     this.container = select(selector)
@@ -60,15 +61,28 @@ export default class Chart {
     const cases = scaleLinear()
       .domain([0, this.max.cases])
       .range([this.height - this.paddingBottom, this.paddingTop])
+    const allDay = cases.copy()
+      .domain([0, this.max.allDay])
+    const casesLog = scalePow()
+      .exponent(0.4)
+      .domain([0, this.max.cases])
+      .range([this.height - this.paddingBottom, this.paddingTop])
+    const allDayLog = casesLog.copy()
+      .domain([0, this.max.allDay])
     this.scale = cases
     this.scales = {
       time: scaleBand()
         .domain(data.map((item) => shortDate(item.date)))
         .range([this.paddingLeft, this.width - this.paddingRight])
         .padding(0.1),
-      cases,
-      allDay: cases.copy()
-        .domain([0, this.max.allDay])
+      linear: {
+        cases,
+        allDay,
+      },
+      pow: {
+        cases: casesLog,
+        allDay: allDayLog,
+      }
     }
   }
 
@@ -180,11 +194,19 @@ export default class Chart {
       .call(this.casesAxis)
   }
 
-  setType(type) {
-    this.type = type
-    this.scale = this.scales[scaleByType[type]]
+  update() {
+    this.scale = this.scales[this.scaleType][scaleByType[this.type]]
     this.updateAxis()
     this.updateBars()
   }
 
+  setType(type) {
+    this.type = type
+    this.update()
+  }
+
+  setScaleType(scaleType) {
+    this.scaleType = scaleType
+    this.update()
+  }
 }
