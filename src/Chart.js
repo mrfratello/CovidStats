@@ -3,6 +3,7 @@ import { select } from 'd3-selection'
 import { scaleBand, scaleLinear, scalePow } from 'd3-scale'
 import { axisLeft, axisBottom } from 'd3-axis'
 import { shortDate } from './format/date'
+import Dataset from './Dataset'
 import transition from './transition'
 import {
   ALL_TYPE,
@@ -15,14 +16,14 @@ const scaleByType = {
   [ALL_TYPE]: 'cases',
   [PERIOD_TYPE]: 'allDay',
   [PERIOD_OFFSET_TYPE]: 'allDay',
-  [ALL_SICKS_TYPE]: 'cases',
+  [ALL_SICKS_TYPE]: 'moment',
 }
 
 const valueByType = {
   [ALL_TYPE]: (prop, item, scale) => scale(item[prop]),
   [PERIOD_TYPE]: (prop, item, scale) => scale(item[`${prop}Day`]),
   [PERIOD_OFFSET_TYPE]: (prop, item, scale) => scale(item[`${prop}Day`]),
-  [ALL_SICKS_TYPE]: (prop, item, scale) => scale(item[prop]),
+  [ALL_SICKS_TYPE]: (prop, item, scale) => scale(item[`${prop}Moment`]),
 }
 
 export default class Chart {
@@ -37,6 +38,10 @@ export default class Chart {
   constructor(selector) {
     this.container = select(selector)
     this.updateSizes()
+
+    const dataset = new Dataset()
+    dataset.request()
+      .then((data) => { this.render(data) })
   }
 
   updateSizes() {
@@ -51,9 +56,11 @@ export default class Chart {
     const allDay = max(data.flatMap(
         (item) => [item.casesDay, item.deathsDay, item.recoverDay],
       ))
+    const moment = max(data, (item) => item.casesMoment)
     this.max = {
       cases,
       allDay,
+      moment,
     }
   }
 
@@ -61,14 +68,12 @@ export default class Chart {
     const cases = scaleLinear()
       .domain([0, this.max.cases])
       .range([this.height - this.paddingBottom, this.paddingTop])
-    const allDay = cases.copy()
-      .domain([0, this.max.allDay])
+
     const casesLog = scalePow()
       .exponent(0.4)
       .domain([0, this.max.cases])
       .range([this.height - this.paddingBottom, this.paddingTop])
-    const allDayLog = casesLog.copy()
-      .domain([0, this.max.allDay])
+
     this.scale = cases
     this.scales = {
       time: scaleBand()
@@ -77,11 +82,13 @@ export default class Chart {
         .padding(0.1),
       linear: {
         cases,
-        allDay,
+        allDay: cases.copy().domain([0, this.max.allDay]),
+        moment: cases.copy().domain([0, this.max.moment]),
       },
       pow: {
         cases: casesLog,
-        allDay: allDayLog,
+        allDay: casesLog.copy().domain([0, this.max.allDay]),
+        moment: casesLog.copy().domain([0, this.max.moment]),
       }
     }
   }
