@@ -1,7 +1,7 @@
 import './format'
 import { serverToDate } from './format/date'
 import Chart from './Chart'
-import './style.scss'
+import './style/main.scss'
 
 const chart = new Chart('#chart')
 

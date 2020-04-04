@@ -1,0 +1,23 @@
+$cases-color: #ffcc33;
+$recover-color: #33cc99;
+$deaths-color: #ff6666;
+
+.chart {
+  .cases {
+    .caseBar {
+      fill: $cases-color;
+    }
+  }
+
+  .recover {
+    .recoverBar {
+      fill: $recover-color;
+    }
+  }
+
+  .deaths {
+    .deathsBar {
+      fill: $deaths-color;
+    }
+  }
+}
