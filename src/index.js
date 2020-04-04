@@ -1,9 +1,15 @@
+import { selectAll } from 'd3-selection'
 import './format'
 import { serverToDate } from './format/date'
 import Chart from './Chart'
 import './style/main.scss'
 
 const chart = new Chart('#chart')
+
+selectAll('[name=type]')
+  .on('change', function() {
+    chart.setType(this.value)
+  })
 
 fetch('./data.json')
   .then((response) => response.json())
