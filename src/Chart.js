@@ -38,7 +38,7 @@ export default class Chart {
     dataset.request()
       .then((data) => { this.render(data) })
 
-      this.tooltip = new Tooltip(this.container)
+    this.tooltip = new Tooltip(this.container)
   }
 
   updateSizes() {

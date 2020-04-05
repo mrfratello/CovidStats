@@ -76,6 +76,14 @@ module.exports = (env) => {
     devServer: {
       contentBase: path.resolve(__dirname, './dist'),
       hot: true,
+      proxy: {
+        '/api': {
+            target: 'http://[::1]:8000',
+            secure: false,
+            changeOrigin: true,
+            logLevel: 'debug',
+        },
+      },
     }
   }
 }

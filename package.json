@@ -8,7 +8,7 @@
   "scripts": {
     "start": "webpack-dev-server",
     "build": "webpack --env.production",
-    "deploy": "yarn build && scp -r dist/. syoxyz:public_html/covid"
+    "deploy": "yarn build && cp -r api dist/ && scp -r dist/. syoxyz:public_html/covid"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
