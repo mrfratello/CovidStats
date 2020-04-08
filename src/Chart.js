@@ -29,6 +29,7 @@ export default class Chart {
   svg = null
   type = ALL_TYPE
   scaleType = 'linear'
+  maxTickWidth = 35
 
   constructor(selector) {
     this.container = select(selector)
@@ -39,6 +40,10 @@ export default class Chart {
       .then((data) => { this.render(data) })
 
     this.tooltip = new Tooltip(this.container)
+
+    select(window).on('resize', () => {
+      this.onResize()
+    })
   }
 
   updateSizes() {
@@ -96,28 +101,17 @@ export default class Chart {
       .scale(this.scale)
 
     this.svg.append('g')
-      .classed('cases_axis', true)
+      .classed('cound_axes', true)
       .attr('transform', `translate(${this.marginLeft}, 0)`)
       .call(this.casesAxis)
 
-    const maxTickWidth = 35
-    const tickTextOverBars = Math.ceil(maxTickWidth / this.scales.time.bandwidth())
-    const dataLength = this.dataset.length
-    const ticksTime = Math.floor(dataLength / tickTextOverBars)
-    const divisorTime = Math.ceil(dataLength / ticksTime)
-    const timeAxis = axisBottom()
-      .scale(this.scales.time)
+    this.timeAxes = axisBottom()
       .tickSize(0)
       .tickPadding(10)
-      .tickFormat((value, i) => (
-        (dataLength - i - 1) % divisorTime
-          ? ''
-          : value
-      ))
 
-    this.svg.append('g')
-      .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
-      .call(timeAxis)
+    this.svg.append('g').classed('time_axes', true)
+
+    this.updateTimeAxes()
   }
 
   initBars() {
@@ -207,25 +201,49 @@ export default class Chart {
     this.cases.selectAll('.caseBar')
       .data(this.dataset, ({ date }) => date)
       .transition(transition)
+      .attr('x', ({ date }) => this.scales.time(shortDate(date)))
+      .attr('width', this.scales.time.bandwidth())
       .attr('y', (item) => this.scale(value('cases', item)))
       .attr('height', (item) => this.height - this.marginBottom - this.scale(value('cases', item)))
     this.recover.selectAll('.recoverBar')
       .data(this.dataset, ({ date }) => date)
       .transition(transition)
+      .attr('x', ({ date }) => this.scales.time(shortDate(date)))
+      .attr('width', this.scales.time.bandwidth())
       .attr('y', (item) => this.scale(value('recover', item)))
       .attr('height', (item) => this.height - this.marginBottom - this.scale(value('recover', item)))
     this.deaths.selectAll('.deathsBar')
       .data(this.dataset, ({ date }) => date)
       .transition(transition)
+      .attr('x', ({ date }) => this.scales.time(shortDate(date)))
+      .attr('width', this.scales.time.bandwidth())
       .attr('y', (item) => this.scale(value('deaths', item)))
       .attr('height', (item) => this.height - this.marginBottom - this.scale(value('deaths', item)))
   }
 
   updateAxis() {
     this.casesAxis.scale(this.scale)
-    this.svg.select('.cases_axis')
+    this.svg.select('.cound_axes')
       .transition(transition)
       .call(this.casesAxis)
+  }
+
+  updateTimeAxes() {
+    const tickTextOverBars = Math.ceil(this.maxTickWidth / this.scales.time.bandwidth())
+    const dataLength = this.dataset.length
+    const ticksTime = Math.floor(dataLength / tickTextOverBars)
+    const divisorTime = Math.ceil(dataLength / ticksTime)
+    this.timeAxes
+      .scale(this.scales.time)
+      .tickFormat((value, i) => (
+        (dataLength - i - 1) % divisorTime
+          ? ''
+          : value
+      ))
+
+    this.svg.select('.time_axes')
+      .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
+      .call(this.timeAxes)
   }
 
   update() {
@@ -242,5 +260,46 @@ export default class Chart {
   setScaleType(scaleType) {
     this.scaleType = scaleType
     this.update()
+  }
+
+  updateScales() {
+    this.scales.time
+        .range([this.marginLeft, this.width - this.marginRight])
+    this.scales.linear
+        .cases
+        .range([this.height - this.marginBottom, this.marginTop])
+    this.scales.linear
+        .allDay
+        .range([this.height - this.marginBottom, this.marginTop])
+    this.scales.linear
+        .moment
+        .range([this.height - this.marginBottom, this.marginTop])
+    this.scales.pow
+        .cases
+        .range([this.height - this.marginBottom, this.marginTop])
+    this.scales.pow
+        .allDay
+        .range([this.height - this.marginBottom, this.marginTop])
+    this.scales.pow
+        .moment
+        .range([this.height - this.marginBottom, this.marginTop])
+  }
+
+  updateOverBars() {
+    this.overBars
+      .attr('x', ({ date }) => this.scales.time(shortDate(date)))
+      .attr('width', this.scales.time.bandwidth())
+  }
+
+  onResize() {
+    console.log('onResize')
+    this.updateSizes()
+    this.svg
+      .style('height', this.height)
+      .style('width', this.width)
+    this.updateScales()
+    this.updateTimeAxes()
+    this.update()
+    this.updateOverBars()
   }
 }
