@@ -2,7 +2,7 @@ import { max } from 'd3-array'
 import { select } from 'd3-selection'
 import { scaleBand, scaleLinear, scalePow } from 'd3-scale'
 import { axisLeft, axisBottom } from 'd3-axis'
-import { shortDate } from './format/date'
+import { shortDate, fullDate } from './format/date'
 import Dataset from './Dataset'
 import Tooltip from './Tooltip'
 import transition from './transition'
@@ -37,7 +37,10 @@ export default class Chart {
 
     const dataset = new Dataset()
     dataset.request()
-      .then((data) => { this.render(data) })
+      .then(([data, updateTime]) => {
+        this.render(data)
+        this.renderInfo(updateTime)
+      })
 
     this.tooltip = new Tooltip(this.container)
 
@@ -51,6 +54,15 @@ export default class Chart {
     this.height = this.container.node().clientHeight
     this.innerHeight = this.height - this.marginBottom - this.marginTop
     this.innerWidth = this.width - this.marginLeft - this.marginRight
+  }
+
+  renderInfo(updateTime) {
+    this.updateText = this.svg
+      .append('text')
+      .classed('updateTime', true)
+      .attr('x', this.marginLeft + 10)
+      .attr('y', this.marginTop + 20)
+      .text(`Обновлено ${fullDate(updateTime)}`)
   }
 
   initExtremums(data) {

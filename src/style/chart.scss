@@ -7,6 +7,11 @@ $deaths-color: #ff6666;
 }
 
 .chart {
+  .updateTime {
+    fill: #9F9F9F;
+    font-size: 10px;
+    font-style: italic;;
+  }
   .overBar {
     fill: transparent;
 

@@ -7,23 +7,53 @@ import {
 export default class Dataset {
   request() {
     this.convert = this.converter()
+    return Promise.all([
+      this.requestData(),
+      this.requestInfo(),
+    ])
+  }
+
+  requestData() {
     return new Promise((resolve) => {
-      window.test = (webpackModule) => {
-        resolve(this.ejectData(webpackModule))
+      window.dataCallback = (webpackModule) => {
+        delete window.dataCallback
+        resolve(
+          this.convert(
+            this.ejectData(webpackModule, 'history'),
+          ),
+        )
       }
 
+      const cache = (new Date()).getTime()
       const script = document.createElement('script')
-      script.src = '/api/dataset.php?callback=test'
+      script.src = `/api/dataset.php?type=data&dc=${cache}`
       document.head.appendChild(script)
     })
   }
 
-  ejectData(webpackModule) {
-    delete window.test
+  requestInfo() {
+    return new Promise((resolve) => {
+      window.infoCallback = (webpackModule) => {
+        delete window.infoCallback
+        resolve(
+          serverToDate(
+            this.ejectData(webpackModule, 'updateTime'),
+          ),
+        )
+      }
+
+      const cache = (new Date()).getTime()
+      const script = document.createElement('script')
+      script.src = `/api/dataset.php?type=info&dc=${cache}`
+      document.head.appendChild(script)
+    })
+  }
+
+  ejectData(webpackModule, method) {
     const intermediate = {}
 
     webpackModule(null, intermediate, webpackReducer)
-    return this.convert(intermediate.history())
+    return intermediate[method]()
   }
 
   converter() {
