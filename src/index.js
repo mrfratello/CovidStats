@@ -5,11 +5,6 @@ import './style/main.scss'
 
 const chart = new Chart('#chart')
 
-selectAll('[name=type]')
-  .on('change', function() {
-    chart.setType(this.value)
-  })
-
 selectAll('.scaleTypeBtn')
   .on('click', function() {
     const scaleType = this.dataset.value
@@ -18,4 +13,14 @@ selectAll('.scaleTypeBtn')
         select(this).classed('active', this.dataset.value === scaleType)
       })
     chart.setScaleType(scaleType)
+  })
+
+selectAll('.chartTypeBtn')
+  .on('click', function() {
+    const chartType = this.dataset.value
+    selectAll('.chartTypeBtn')
+      .each(function() {
+        select(this).classed('active', this.dataset.value === chartType)
+      })
+    chart.setType(chartType)
   })

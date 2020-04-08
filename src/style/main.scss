@@ -12,6 +12,11 @@ $h6-font-size: $font-size-base;
   min-height: 100vh;
 }
 
+.form-btn-group {
+  padding-top: $input-btn-padding-y;
+  padding-bottom: $input-btn-padding-y;
+}
+
 @media (min-width: 768px) {
   .content {
     p {

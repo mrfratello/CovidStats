@@ -18,87 +18,72 @@
       Не пополняйте статистику - спасибо, что вы дома!
     </p>
     <p><small>Данные с ресурса <a href="https://covid.2gis.ru" target="_blank">2GIS</a></small></p>
-    <p><a class="go-to-chart" href="#chart">Переходим на графики ↓</a></p>
+    <p><a class="go-to-chart" href="#chart-box">Переходим на графики ↓</a></p>
   </div>
-  <div class="container-fluid screen">
-    <div class="row align-items-center">
-      <div class="col">
-        <div id="chart">
-          <div class="loading">
-            <div class="loading-content">
-              Загрузка данных ...
-            </div>
+  <div class="container-fluid screen" id="chart-box">
+    <div id="chart_tools">
+      <div class="form-group row">
+        <label class="col-2 col-md-1 col-form-label">Шкала</label>
+        <div class="col-10 col-md-11">
+          <div class="btn-group btn-group-sm form-btn-group" role="group">
+            <button
+              type="button"
+              class="scaleTypeBtn btn btn-primary active"
+              data-value="linear"
+              >
+              Равномерная
+            </button>
+            <button
+              type="button"
+              class="scaleTypeBtn btn btn-primary"
+              data-value="pow"
+              >
+              Не равномерная
+            </button>
           </div>
         </div>
       </div>
-      <div class="col-auto">
-        <h4>Шкала</h4>
-        <div class="btn-group" role="group">
-          <button
-            type="button"
-            class="scaleTypeBtn btn btn-primary active"
-            data-value="linear"
-            >
-            Линейная
-          </button>
-          <button
-            type="button"
-            class="scaleTypeBtn btn btn-primary btn-sm"
-            data-value="pow"
-            >
-            Экпоненциальная
-          </button>
+      <div class="form-group row" style="margin-bottom: 0;">
+        <label class="col-2 col-md-1 col-form-label">График</label>
+        <div class="col-10 col-md-11">
+          <div class="btn-group btn-group-sm form-btn-group" role="group">
+            <button
+              type="button"
+              class="chartTypeBtn btn btn-primary active"
+              data-value="all"
+              >
+              Общее количество
+            </button>
+            <button
+              type="button"
+              class="chartTypeBtn btn btn-primary"
+              data-value="period"
+              >
+              Динамика новых случаев
+            </button>
+            <button
+              type="button"
+              class="chartTypeBtn btn btn-primary"
+              data-value="period"
+              disabled
+              >
+              Динамика со смещением
+            </button>
+            <button
+              type="button"
+              class="chartTypeBtn btn btn-primary"
+              data-value="allSicks"
+              >
+              Количество зараженных
+            </button>
+          </div>
         </div>
-        <br><br>
-        <h4>Тип графика</h4>
-        <div class="form-check">
-          <input
-            type="radio"
-            class="form-check-input"
-            name="type"
-            value="all"
-            id="all"
-            checked
-            >
-          <label for="all" class="form-check-label">
-            Количество нарастающим итогом
-          </label>
-        </div>
-        <div class="form-check">
-          <input
-            type="radio"
-            class="form-check-input"
-            name="type"
-            value="period"
-            id="period"
-            >
-          <label for="period" class="form-check-label">
-            Динамика новых случаев
-          </label>
-        </div>
-        <!-- <div class="form-check">
-          <input
-            type="radio"
-            class="form-check-input"
-            name="type"
-            value="periodOffset"
-            id="periodOffset"
-            >
-          <label for="periodOffset" class="form-check-label">
-            Смещение выздоровивших на 2 недели
-          </label>
-        </div> -->
-        <div class="form-check">
-          <input
-            type="radio"
-            class="form-check-input"
-            name="type"
-            value="allSicks"
-            id="allSicks"
-            >
-          <label for="allSicks" class="form-check-label">
-            Общее количество больных
-          </label>
+      </div>
+    </div>
+    <div id="chart">
+      <div class="loading">
+        <div class="loading-content">
+          Загрузка данных ...
         </div>
       </div>
     </div>

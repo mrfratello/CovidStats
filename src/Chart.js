@@ -100,16 +100,17 @@ export default class Chart {
       .attr('transform', `translate(${this.marginLeft}, 0)`)
       .call(this.casesAxis)
 
-    const ticksTime = 6
+    const maxTickWidth = 35
+    const tickTextOverBars = Math.ceil(maxTickWidth / this.scales.time.bandwidth())
     const dataLength = this.dataset.length
+    const ticksTime = Math.floor(dataLength / tickTextOverBars)
     const divisorTime = Math.ceil(dataLength / ticksTime)
-    const offsetIndexTime = Math.floor(dataLength % Math.floor(dataLength / divisorTime))
     const timeAxis = axisBottom()
       .scale(this.scales.time)
       .tickSize(0)
       .tickPadding(10)
       .tickFormat((value, i) => (
-        (i + offsetIndexTime) % divisorTime
+        (dataLength - i - 1) % divisorTime
           ? ''
           : value
       ))
