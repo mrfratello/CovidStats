@@ -121,7 +121,10 @@ export default class Chart {
       .tickSize(0)
       .tickPadding(10)
 
-    this.svg.append('g').classed('time_axes', true)
+    this.svg.append('g')
+      .attr('clip-path', 'url(#visible-area)')
+      .append('g')
+        .classed('time_axes', true)
 
     this.updateTimeAxes()
   }
@@ -148,7 +151,9 @@ export default class Chart {
               rect: {
                 left: +rect.attr('x'),
                 right: me.width - (+rect.attr('x') + +rect.attr('width')),
-              }
+              },
+              index,
+              periodOffset: me._periodOffset,
             })
           })
           .on('mouseout', () => {
@@ -157,6 +162,7 @@ export default class Chart {
 
     this.cases = this.svg.append('g')
       .classed('cases', true)
+      .attr('clip-path', 'url(#visible-area)')
     this.cases.selectAll('.caseBar')
       .data(this.dataset, ({ date }) => date)
       .enter()
@@ -169,6 +175,7 @@ export default class Chart {
 
     this.recover = this.svg.append('g')
       .classed('recover', true)
+      .attr('clip-path', 'url(#visible-area)')
     this.recover.selectAll('.recoverBar')
       .data(this.dataset, ({ date }) => date)
       .enter()
@@ -181,6 +188,7 @@ export default class Chart {
 
     this.deaths = this.svg.append('g')
       .classed('deaths', true)
+      .attr('clip-path', 'url(#visible-area)')
     this.deaths.selectAll('.deathsBar')
       .data(this.dataset, ({ date }) => date)
       .enter()
@@ -194,6 +202,7 @@ export default class Chart {
 
   render(data) {
     this.dataset = data
+    this.tooltip.setDataset(data)
     this.container.select('.loading')
       .remove()
     this.svg = this.container
@@ -201,6 +210,13 @@ export default class Chart {
       .classed('chart', true)
       .style('height', this.height)
       .style('width', this.width)
+    this.svg.append('clipPath')
+      .attr('id', 'visible-area')
+      .append('rect')
+      .attr('x', this.marginLeft)
+      .attr('y', 0)
+      .attr('width', this.innerWidth + this.marginRight)
+      .attr('height', this.height)
     this.initExtremums(data)
     this.initScales(data)
     this.renderAxis()

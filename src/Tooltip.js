@@ -12,11 +12,17 @@ export default class Tooltip {
       .classed('chart-tooltip', true)
   }
 
+  setDataset(data) {
+    this.dataset = data
+  }
+
   show({
     data,
     right,
     rect,
     type,
+    index,
+    periodOffset,
   }) {
     const position = [
       right ? 'right' : 'left',
@@ -28,22 +34,37 @@ export default class Tooltip {
 
     const value = valueByType[type]
 
+    const cases = int(value('cases', data))
+    let recover = int(value('recover', data))
+    let deaths = int(value('deaths', data))
+
+    if (periodOffset !== null) {
+      const offsetIndex = index + periodOffset.offsetDays
+      if (offsetIndex >= this.dataset.length) {
+        recover = '—'
+        deaths = '—'
+      } else {
+        const item = this.dataset[offsetIndex]
+        recover = int(value('recover', item))
+        deaths = int(value('deaths', item))
+      }
+    }
+
     this.box.append('div')
       .classed('cases value', true)
-      .text(int(value('cases', data)))
+      .text(cases)
     if (type !== ALL_SICKS_TYPE) {
       this.box.append('div')
         .classed('recover value', true)
-        .text(int(value('recover', data)))
+        .text(recover)
       this.box.append('div')
         .classed('deaths value', true)
-        .text(int(value('deaths', data)))
+        .text(deaths)
     }
   }
 
   hide() {
     this.box
-      // .classed('active', false)
       .selectAll('.value')
       .remove()
   }
