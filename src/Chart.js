@@ -5,11 +5,11 @@ import { axisLeft, axisBottom } from 'd3-axis'
 import { shortDate, fullDate } from './format/date'
 import Dataset from './Dataset'
 import Tooltip from './Tooltip'
-import transition from './transition'
+import PeriodOffset from './chart/PeriodOffset'
+import transition, { DURATION } from './transition'
 import {
   ALL_TYPE,
   PERIOD_TYPE,
-  PERIOD_OFFSET_TYPE,
   ALL_SICKS_TYPE,
   valueByType,
 } from './constants'
@@ -17,19 +17,19 @@ import {
 const scaleByType = {
   [ALL_TYPE]: 'cases',
   [PERIOD_TYPE]: 'allDay',
-  [PERIOD_OFFSET_TYPE]: 'allDay',
   [ALL_SICKS_TYPE]: 'moment',
 }
 
 export default class Chart {
   marginLeft = 50
   marginRight = 30
-  marginBottom = 30
+  marginBottom = 60
   marginTop = 42
   svg = null
   type = ALL_TYPE
   scaleType = 'linear'
   maxTickWidth = 35
+  _periodOffset = null
 
   constructor(selector) {
     this.container = select(selector)
@@ -223,14 +223,14 @@ export default class Chart {
       .attr('x', ({ date }) => this.scales.time(shortDate(date)))
       .attr('width', this.scales.time.bandwidth())
       .attr('y', (item) => this.scale(value('recover', item)))
-      .attr('height', (item) => this.height - this.marginBottom - this.scale(value('recover', item)))
+      .attr('height', (item) => this.scale(0) - this.scale(value('recover', item)))
     this.deaths.selectAll('.deathsBar')
       .data(this.dataset, ({ date }) => date)
       .transition(transition)
       .attr('x', ({ date }) => this.scales.time(shortDate(date)))
       .attr('width', this.scales.time.bandwidth())
       .attr('y', (item) => this.scale(value('deaths', item)))
-      .attr('height', (item) => this.height - this.marginBottom - this.scale(value('deaths', item)))
+      .attr('height', (item) => this.scale(0) - this.scale(value('deaths', item)))
   }
 
   updateAxis() {
@@ -262,9 +262,27 @@ export default class Chart {
     this.scale = this.scales[this.scaleType][scaleByType[this.type]]
     this.updateAxis()
     this.updateBars()
+    if (this._periodOffset) {
+      setTimeout(() => {
+        this._periodOffset.update()
+      }, DURATION)
+    }
   }
 
   setType(type) {
+    if (type !== PeriodOffset.type && this._periodOffset) {
+      this._periodOffset.destroy()
+      this._periodOffset = null
+      setTimeout(() => {
+        this.setType(type)
+      }, DURATION)
+      return
+    }
+    if (type === PeriodOffset.type && !this._periodOffset) {
+      type = 'period'
+      this._periodOffset = new PeriodOffset(this)
+    }
+
     this.type = type
     this.update()
   }
@@ -304,7 +322,6 @@ export default class Chart {
   }
 
   onResize() {
-    console.log('onResize')
     this.updateSizes()
     this.svg
       .style('height', this.height)
