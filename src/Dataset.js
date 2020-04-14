@@ -1,10 +1,13 @@
-import { serverToDate } from './format/date'
+import axios from 'axios'
+import { serverToDate, serverShortToDate } from './format/date'
 import {
   webpackReducer,
   compose,
 } from './util'
 
 export default class Dataset {
+  location = 'ru'
+
   request() {
     this.convert = this.converter()
     return Promise.all([
@@ -14,39 +17,14 @@ export default class Dataset {
   }
 
   requestData() {
-    return new Promise((resolve) => {
-      window.dataCallback = (webpackModule) => {
-        delete window.dataCallback
-        resolve(
-          this.convert(
-            this.ejectData(webpackModule, 'history'),
-          ),
-        )
-      }
-
-      const cache = (new Date()).getTime()
-      const script = document.createElement('script')
-      script.src = `/api/dataset.php?type=data&dc=${cache}`
-      document.head.appendChild(script)
-    })
+    return axios.get(`/api/json/history.${this.location}.json`)
+      .then((responce) => this.convert(responce.data))
   }
 
   requestInfo() {
-    return new Promise((resolve) => {
-      window.infoCallback = (webpackModule) => {
-        delete window.infoCallback
-        resolve(
-          serverToDate(
-            this.ejectData(webpackModule, 'updateTime'),
-          ),
-        )
-      }
-
-      const cache = (new Date()).getTime()
-      const script = document.createElement('script')
-      script.src = `/api/dataset.php?type=info&dc=${cache}`
-      document.head.appendChild(script)
-    })
+    return axios.get(`/api/json/by-territory.${this.location}.json`)
+      .then((responce) => responce.data.date)
+      .then((date) => serverToDate(date))
   }
 
   ejectData(webpackModule, method) {
@@ -93,9 +71,10 @@ export default class Dataset {
   }
 
   formatDate(data) {
+    console.log(data)
     return data.map((item) => ({
       ...item,
-      date: serverToDate(item.date),
+      date: serverShortToDate(item.date),
     }))
   }
 }
