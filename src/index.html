@@ -6,7 +6,7 @@
   <title>Covid Stats Russia</title>
 </head>
 <body>
-  <div class="container screen content">
+  <div class="container screen content" style="padding-top: 20px;">
     <h1>Статистика заражения инфекцией Covid-19 в России</h1>
     <p>
       Смотрим на статистку заболеваемости вирусом Covid-19 под разными углами.
@@ -22,60 +22,23 @@
   </div>
   <div class="container-fluid screen" id="chart-box">
     <div id="chart_tools">
-      <div class="form-group row">
-        <label class="col-2 col-md-1 col-form-label">Шкала</label>
-        <div class="col-10 col-md-11">
-          <div class="btn-group btn-group-sm form-btn-group" role="group">
-            <button
-              type="button"
-              class="scaleTypeBtn btn btn-primary active"
-              data-value="linear"
-              >
-              Равномерная
-            </button>
-            <button
-              type="button"
-              class="scaleTypeBtn btn btn-primary"
-              data-value="pow"
-              >
-              Не равномерная
-            </button>
-          </div>
-        </div>
-      </div>
-      <div class="form-group row" style="margin-bottom: 0;">
-        <label class="col-2 col-md-1 col-form-label">График</label>
-        <div class="col-10 col-md-11">
-          <div class="btn-group btn-group-sm form-btn-group" role="group">
-            <button
-              type="button"
-              class="chartTypeBtn btn btn-info active"
-              data-value="all"
-              >
-              Общее количество
-            </button>
-            <button
-              type="button"
-              class="chartTypeBtn btn btn-info"
-              data-value="period"
-              >
-              Динамика новых случаев
-            </button>
-            <button
-              type="button"
-              class="chartTypeBtn btn btn-info"
-              data-value="period_offset"
-              >
-              Динамика со смещением
-            </button>
-            <button
-              type="button"
-              class="chartTypeBtn btn btn-info"
-              data-value="allSicks"
-              >
-              Количество зараженных
-            </button>
-          </div>
+      <h2>Основной график</h2>
+      <div class="text-center">
+        <div class="btn-group btn-group-sm form-btn-group" role="group">
+          <button
+            type="button"
+            class="scaleTypeBtn btn btn-primary active"
+            data-value="linear"
+            >
+            Равномерно
+          </button>
+          <button
+            type="button"
+            class="scaleTypeBtn btn btn-primary"
+            data-value="pow"
+            >
+            Не равномерно
+          </button>
         </div>
       </div>
     </div>
@@ -85,6 +48,59 @@
           Загрузка данных ...
         </div>
       </div>
+    </div>
+    <div class="text-center">
+      <div class="btn-group btn-group-sm form-btn-group" role="group">
+        <button
+          type="button"
+          class="chartTypeBtn btn btn-info active"
+          data-value="all"
+          >
+          Общее количество
+        </button>
+        <button
+          type="button"
+          class="chartTypeBtn btn btn-info"
+          data-value="period"
+          >
+          Динамика новых случаев
+        </button>
+        <button
+          type="button"
+          class="chartTypeBtn btn btn-info"
+          data-value="period_offset"
+          >
+          Динамика со смещением
+        </button>
+        <button
+          type="button"
+          class="chartTypeBtn btn btn-info"
+          data-value="allSicks"
+          >
+          Активных больных
+        </button>
+      </div>
+    </div>
+    <div class="container content">
+      <p class="typeDescription active" data-type="all">
+        <strong>Общее количество</strong> зараженных, вылечившихся и умерших <strong>нарастающим итогом</strong>.
+        Данный тип графика наиболее распространен.
+      </p>
+      <p class="typeDescription" data-type="period">
+        <strong>Динамика</strong> заражения, выздоровления и смертности <strong>за каждый день</strong>.
+        Отображаются только новые случаи за соответствующий день.
+        График позволит увидеть пик заражения и её спад.
+      </p>
+      <p class="typeDescription" data-type="period_offset">
+        Согласно новостям из СМИ, период болезни составляет две недели.
+        Можно предположить, что заразившийся 11 марта попадет в число вылечившихся 25 марта.
+        На графике можно грубо оценить количество выздоровевших по отношению к зараженным.
+      </p>
+      <p class="typeDescription" data-type="allSicks">
+        Показано <strong>количество больных</strong> короновирусной инфекцией <strong>на конкретный день</strong>.
+        Человек перестает быть больным, когда он вылечился или умер от болезни.
+        Эта динамика аналогия загруженности медицинской системы.
+      </p>
     </div>
   </div>
   <div class="powr-comments" id="d611ad1a_1586129861"></div>

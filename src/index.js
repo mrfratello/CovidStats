@@ -22,5 +22,9 @@ selectAll('.chartTypeBtn')
       .each(function() {
         select(this).classed('active', this.dataset.value === chartType)
       })
+    selectAll('.typeDescription')
+      .each(function() {
+        select(this).classed('active', this.dataset.type === chartType)
+      })
     chart.setType(chartType)
   })

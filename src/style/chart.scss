@@ -67,3 +67,11 @@ $deaths-color: #ff6666;
     color: $deaths-color;
   }
 }
+
+.typeDescription {
+  display: none;
+
+  &.active {
+    display: block;
+  }
+}

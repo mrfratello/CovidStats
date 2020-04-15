@@ -71,7 +71,6 @@ export default class Dataset {
   }
 
   formatDate(data) {
-    console.log(data)
     return data.map((item) => ({
       ...item,
       date: serverShortToDate(item.date),
