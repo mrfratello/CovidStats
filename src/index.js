@@ -1,9 +1,9 @@
 import { selectAll, select } from 'd3-selection'
 import './format'
-import Chart from './Chart'
+import SimpleChart from './chart/Simple'
 import './style/main.scss'
 
-const chart = new Chart('#chart')
+const simpleChart = new SimpleChart('#chart')
 
 selectAll('.scaleTypeBtn')
   .on('click', function() {
@@ -12,7 +12,7 @@ selectAll('.scaleTypeBtn')
       .each(function() {
         select(this).classed('active', this.dataset.value === scaleType)
       })
-    chart.setScaleType(scaleType)
+    simpleChart.setScaleType(scaleType)
   })
 
 selectAll('.chartTypeBtn')
@@ -26,5 +26,5 @@ selectAll('.chartTypeBtn')
       .each(function() {
         select(this).classed('active', this.dataset.type === chartType)
       })
-    chart.setType(chartType)
+    simpleChart.setType(chartType)
   })

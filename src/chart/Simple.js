@@ -2,17 +2,17 @@ import { max } from 'd3-array'
 import { select } from 'd3-selection'
 import { scaleBand, scaleLinear, scalePow } from 'd3-scale'
 import { axisLeft, axisBottom } from 'd3-axis'
-import { shortDate, fullDate } from './format/date'
-import Dataset from './Dataset'
-import Tooltip from './Tooltip'
-import PeriodOffset from './chart/PeriodOffset'
-import transition, { DURATION } from './transition'
+import { shortDate, fullDate } from '../format/date'
+import Dataset from '../Dataset'
+import Tooltip from '../Tooltip'
+import PeriodOffset from './PeriodOffset'
+import transition, { DURATION } from '../transition'
 import {
   ALL_TYPE,
   PERIOD_TYPE,
   ALL_SICKS_TYPE,
   valueByType,
-} from './constants'
+} from '../constants'
 
 const scaleByType = {
   [ALL_TYPE]: 'cases',
