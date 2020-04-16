@@ -2,12 +2,11 @@ import { max } from 'd3-array'
 import { select } from 'd3-selection'
 import { scaleBand, scaleLinear, scalePow } from 'd3-scale'
 import { axisLeft, axisBottom } from 'd3-axis'
-import { shortDate, fullDate } from '../format/date'
+import { shortDate } from '../format/date'
 import dataset from '../Dataset'
 import Tooltip from '../Tooltip'
 import BaseChart from './Base'
-import PeriodOffset from './PeriodOffset'
-import transition, { DURATION } from '../transition'
+import transition from '../transition'
 import {
   ALL_TYPE,
   PERIOD_TYPE,
@@ -25,7 +24,6 @@ export default class Chart extends BaseChart {
   type = ALL_TYPE
   scaleType = 'linear'
   maxTickWidth = 35
-  _periodOffset = null
 
   constructor(selector) {
     super(selector)
@@ -37,15 +35,6 @@ export default class Chart extends BaseChart {
       })
 
     this.tooltip = new Tooltip(this.container)
-  }
-
-  renderInfo(updateTime) {
-    this.updateText = this.svg
-      .append('text')
-      .classed('updateTime', true)
-      .attr('x', this.marginLeft + 10)
-      .attr('y', this.marginTop + 20)
-      .text(`Обновлено ${fullDate(updateTime)}`)
   }
 
   initExtremums(data) {
@@ -135,8 +124,6 @@ export default class Chart extends BaseChart {
                 left: +rect.attr('x'),
                 right: me.width - (+rect.attr('x') + +rect.attr('width')),
               },
-              index,
-              periodOffset: me._periodOffset,
             })
           })
           .on('mouseout', () => {
@@ -248,27 +235,9 @@ export default class Chart extends BaseChart {
     this.scale = this.scales[this.scaleType][scaleByType[this.type]]
     this.updateAxis()
     this.updateBars()
-    if (this._periodOffset) {
-      setTimeout(() => {
-        this._periodOffset.update()
-      }, DURATION)
-    }
   }
 
   setType(type) {
-    if (type !== PeriodOffset.type && this._periodOffset) {
-      this._periodOffset.destroy()
-      this._periodOffset = null
-      setTimeout(() => {
-        this.setType(type)
-      }, DURATION)
-      return
-    }
-    if (type === PeriodOffset.type && !this._periodOffset) {
-      type = 'period'
-      this._periodOffset = new PeriodOffset(this)
-    }
-
     this.type = type
     this.update()
   }

@@ -1,9 +1,10 @@
 import { select } from 'd3-selection'
+import { fullDate } from '../format/date'
 
 export default class Base {
   marginLeft = 50
   marginRight = 30
-  marginBottom = 60
+  marginBottom = 30
   marginTop = 42
   svg = null
 
@@ -37,6 +38,15 @@ export default class Base {
       .attr('y', 0)
       .attr('width', this.innerWidth + this.marginRight)
       .attr('height', this.height)
+  }
+
+  renderInfo(updateTime) {
+    this.updateText = this.svg
+      .append('text')
+      .classed('updateTime', true)
+      .attr('x', this.marginLeft + 10)
+      .attr('y', this.marginTop + 20)
+      .text(`Обновлено ${fullDate(updateTime)}`)
   }
 
   onResize() {

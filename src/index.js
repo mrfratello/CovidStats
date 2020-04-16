@@ -1,9 +1,11 @@
 import { selectAll, select } from 'd3-selection'
 import './format'
 import SimpleChart from './chart/Simple'
+import PeriodChart from './chart/PeriodOffset'
 import './style/main.scss'
 
 const simpleChart = new SimpleChart('#chart')
+const periodChart = new PeriodChart('#period-offset-chart')
 
 selectAll('.scaleTypeBtn')
   .on('click', function() {

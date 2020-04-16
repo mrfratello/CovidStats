@@ -36,12 +36,12 @@ class Dataset {
 
   requestData() {
     return axios.get(`/api/json/history.${this.location}.json`)
-      .then((responce) => this.convertHistory(responce.data))
+      .then((response) => this.convertHistory(response.data))
   }
 
   requestInfo() {
     return axios.get(`/api/json/by-territory.${this.location}.json`)
-      .then((responce) => responce.data.date)
+      .then((response) => response.data.date)
       .then((date) => serverToDate(date))
   }
 

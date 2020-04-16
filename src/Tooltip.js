@@ -21,8 +21,6 @@ export default class Tooltip {
     right,
     rect,
     type,
-    index,
-    periodOffset,
   }) {
     const position = [
       right ? 'right' : 'left',
@@ -37,18 +35,6 @@ export default class Tooltip {
     const cases = int(value('cases', data))
     let recover = int(value('recover', data))
     let deaths = int(value('deaths', data))
-
-    if (periodOffset !== null) {
-      const offsetIndex = index + periodOffset.offsetDays
-      if (offsetIndex >= this.dataset.length) {
-        recover = '—'
-        deaths = '—'
-      } else {
-        const item = this.dataset[offsetIndex]
-        recover = int(value('recover', item))
-        deaths = int(value('deaths', item))
-      }
-    }
 
     this.box.append('div')
       .classed('cases value', true)
