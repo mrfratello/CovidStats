@@ -1,24 +1,42 @@
 import axios from 'axios'
+import { select } from 'd3-selection'
 import { serverToDate, serverShortToDate } from './format/date'
 import {
   webpackReducer,
   compose,
 } from './util'
 
-export default class Dataset {
+class Dataset {
   location = 'ru'
+  waiting = null
+
+  constructor() {
+    this.convertHistory = this.converter()
+    this.waiting = this.request()
+  }
+
+  getAll() {
+    return !this.waiting
+      ? Promise.reject('Request not started')
+      : this.waiting
+  }
 
   request() {
-    this.convert = this.converter()
+    const body = select('body')
+      .classed('loaded', false)
+
     return Promise.all([
       this.requestData(),
       this.requestInfo(),
     ])
+      .finally(() => {
+        body.classed('loaded', true)
+      })
   }
 
   requestData() {
     return axios.get(`/api/json/history.${this.location}.json`)
-      .then((responce) => this.convert(responce.data))
+      .then((responce) => this.convertHistory(responce.data))
   }
 
   requestInfo() {
@@ -77,3 +95,5 @@ export default class Dataset {
     }))
   }
 }
+
+export default new Dataset()

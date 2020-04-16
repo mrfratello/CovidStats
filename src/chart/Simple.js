@@ -3,8 +3,9 @@ import { select } from 'd3-selection'
 import { scaleBand, scaleLinear, scalePow } from 'd3-scale'
 import { axisLeft, axisBottom } from 'd3-axis'
 import { shortDate, fullDate } from '../format/date'
-import Dataset from '../Dataset'
+import dataset from '../Dataset'
 import Tooltip from '../Tooltip'
+import BaseChart from './Base'
 import PeriodOffset from './PeriodOffset'
 import transition, { DURATION } from '../transition'
 import {
@@ -20,40 +21,22 @@ const scaleByType = {
   [ALL_SICKS_TYPE]: 'moment',
 }
 
-export default class Chart {
-  marginLeft = 50
-  marginRight = 30
-  marginBottom = 60
-  marginTop = 42
-  svg = null
+export default class Chart extends BaseChart {
   type = ALL_TYPE
   scaleType = 'linear'
   maxTickWidth = 35
   _periodOffset = null
 
   constructor(selector) {
-    this.container = select(selector)
-    this.updateSizes()
+    super(selector)
 
-    const dataset = new Dataset()
-    dataset.request()
+    dataset.getAll()
       .then(([data, updateTime]) => {
         this.render(data)
         this.renderInfo(updateTime)
       })
 
     this.tooltip = new Tooltip(this.container)
-
-    select(window).on('resize', () => {
-      this.onResize()
-    })
-  }
-
-  updateSizes() {
-    this.width = this.container.node().clientWidth
-    this.height = this.container.node().clientHeight
-    this.innerHeight = this.height - this.marginBottom - this.marginTop
-    this.innerWidth = this.width - this.marginLeft - this.marginRight
   }
 
   renderInfo(updateTime) {
@@ -203,20 +186,7 @@ export default class Chart {
   render(data) {
     this.dataset = data
     this.tooltip.setDataset(data)
-    this.container.select('.loading')
-      .remove()
-    this.svg = this.container
-      .append('svg')
-      .classed('chart', true)
-      .style('height', this.height)
-      .style('width', this.width)
-    this.svg.append('clipPath')
-      .attr('id', 'visible-area')
-      .append('rect')
-      .attr('x', this.marginLeft)
-      .attr('y', 0)
-      .attr('width', this.innerWidth + this.marginRight)
-      .attr('height', this.height)
+
     this.initExtremums(data)
     this.initScales(data)
     this.renderAxis()
@@ -338,10 +308,8 @@ export default class Chart {
   }
 
   onResize() {
-    this.updateSizes()
-    this.svg
-      .style('height', this.height)
-      .style('width', this.width)
+    super.onResize()
+
     this.updateScales()
     this.updateTimeAxes()
     this.update()

@@ -32,10 +32,20 @@ $btn-focus-width: 0;
   height: 300px;
 }
 
+.chart {
+  position: relative;
+}
 .loading {
+  position: absolute;
   display: table;
   height: 100%;
   width: 100%;
+  z-index: 100;
+  background-color: #ffffff;
+
+  .loaded &{
+    display: none;
+  }
 
   &-content {
     display: table-cell;
