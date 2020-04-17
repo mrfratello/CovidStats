@@ -1,5 +1,7 @@
 import { select } from 'd3-selection'
+import { debounce } from '../util'
 import { fullDate } from '../format/date'
+import Tooltip from '../Tooltip'
 
 export default class Base {
   marginLeft = 50
@@ -8,14 +10,17 @@ export default class Base {
   marginTop = 42
   svg = null
 
-  constructor(selector) {
-    this.container = select(selector)
+  constructor(id) {
+    this.container = select(`#${id}`)
     this.updateSizes()
     this.initSvg()
 
-    select(window).on('resize', () => {
+    const onResize = debounce(() => {
       this.onResize()
-    })
+    }, 400)
+
+    select(window).on(`resize.${id}`, () => { onResize() })
+    this.tooltip = new Tooltip(this.container)
   }
 
   updateSizes() {
@@ -31,13 +36,6 @@ export default class Base {
       .classed('chart', true)
       .style('height', this.height)
       .style('width', this.width)
-    this.svg.append('clipPath')
-      .attr('id', 'visible-area')
-      .append('rect')
-      .attr('x', this.marginLeft)
-      .attr('y', 0)
-      .attr('width', this.innerWidth + this.marginRight)
-      .attr('height', this.height)
   }
 
   renderInfo(updateTime) {

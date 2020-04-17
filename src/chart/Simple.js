@@ -4,7 +4,6 @@ import { scaleBand, scaleLinear, scalePow } from 'd3-scale'
 import { axisLeft, axisBottom } from 'd3-axis'
 import { shortDate } from '../format/date'
 import dataset from '../Dataset'
-import Tooltip from '../Tooltip'
 import BaseChart from './Base'
 import transition from '../transition'
 import {
@@ -27,14 +26,13 @@ export default class Chart extends BaseChart {
 
   constructor(selector) {
     super(selector)
+    this.svg.attr('id', 'simple')
 
     dataset.getAll()
       .then(([data, updateTime]) => {
         this.render(data)
         this.renderInfo(updateTime)
       })
-
-    this.tooltip = new Tooltip(this.container)
   }
 
   initExtremums(data) {
@@ -94,11 +92,14 @@ export default class Chart extends BaseChart {
       .tickPadding(10)
 
     this.svg.append('g')
-      .attr('clip-path', 'url(#visible-area)')
       .append('g')
         .classed('time_axes', true)
 
     this.updateTimeAxes()
+  }
+
+  getDataValue(property, dataItem) {
+    return valueByType[this.type](property, dataItem)
   }
 
   initBars() {
@@ -117,13 +118,21 @@ export default class Chart extends BaseChart {
           .on('mouseover', function(data, index) {
             const rect = select(this)
             me.tooltip.show({
-              data,
-              right: index > me.dataset.length / 2,
-              type: me.type,
-              rect: {
-                left: +rect.attr('x'),
-                right: me.width - (+rect.attr('x') + +rect.attr('width')),
+              data: {
+                cases: me.getDataValue('cases', data),
+                recover: me.type !== ALL_SICKS_TYPE
+                  ? me.getDataValue('recover', data)
+                  : null,
+                deaths: me.type !== ALL_SICKS_TYPE
+                  ? me.getDataValue('deaths', data)
+                  : null,
               },
+              right: index > me.dataset.length / 2
+                ? me.width - (+rect.attr('x') + +rect.attr('width')) + 'px'
+                : 'auto',
+              left: index <= me.dataset.length / 2
+                ? rect.attr('x') + 'px'
+                : 'auto',
             })
           })
           .on('mouseout', () => {
@@ -132,7 +141,6 @@ export default class Chart extends BaseChart {
 
     this.cases = this.svg.append('g')
       .classed('cases', true)
-      .attr('clip-path', 'url(#visible-area)')
     this.cases.selectAll('.caseBar')
       .data(this.dataset, ({ date }) => date)
       .enter()
@@ -145,7 +153,6 @@ export default class Chart extends BaseChart {
 
     this.recover = this.svg.append('g')
       .classed('recover', true)
-      .attr('clip-path', 'url(#visible-area)')
     this.recover.selectAll('.recoverBar')
       .data(this.dataset, ({ date }) => date)
       .enter()
@@ -158,7 +165,6 @@ export default class Chart extends BaseChart {
 
     this.deaths = this.svg.append('g')
       .classed('deaths', true)
-      .attr('clip-path', 'url(#visible-area)')
     this.deaths.selectAll('.deathsBar')
       .data(this.dataset, ({ date }) => date)
       .enter()
@@ -182,28 +188,27 @@ export default class Chart extends BaseChart {
   }
 
   updateBars() {
-    const value = valueByType[this.type]
     this.cases.selectAll('.caseBar')
       .data(this.dataset, ({ date }) => date)
       .transition(transition)
       .attr('x', ({ date }) => this.scales.time(shortDate(date)))
       .attr('width', this.scales.time.bandwidth())
-      .attr('y', (item) => this.scale(value('cases', item)))
-      .attr('height', (item) => this.height - this.marginBottom - this.scale(value('cases', item)))
+      .attr('y', (item) => this.scale(this.getDataValue('cases', item)))
+      .attr('height', (item) => this.height - this.marginBottom - this.scale(this.getDataValue('cases', item)))
     this.recover.selectAll('.recoverBar')
       .data(this.dataset, ({ date }) => date)
       .transition(transition)
       .attr('x', ({ date }) => this.scales.time(shortDate(date)))
       .attr('width', this.scales.time.bandwidth())
-      .attr('y', (item) => this.scale(value('recover', item)))
-      .attr('height', (item) => this.scale(0) - this.scale(value('recover', item)))
+      .attr('y', (item) => this.scale(this.getDataValue('recover', item)))
+      .attr('height', (item) => this.scale(0) - this.scale(this.getDataValue('recover', item)))
     this.deaths.selectAll('.deathsBar')
       .data(this.dataset, ({ date }) => date)
       .transition(transition)
       .attr('x', ({ date }) => this.scales.time(shortDate(date)))
       .attr('width', this.scales.time.bandwidth())
-      .attr('y', (item) => this.scale(value('deaths', item)))
-      .attr('height', (item) => this.scale(0) - this.scale(value('deaths', item)))
+      .attr('y', (item) => this.scale(this.getDataValue('deaths', item)))
+      .attr('height', (item) => this.scale(0) - this.scale(this.getDataValue('deaths', item)))
   }
 
   updateAxis() {

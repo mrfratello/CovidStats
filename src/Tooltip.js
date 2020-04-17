@@ -1,8 +1,4 @@
 import { format } from 'd3-format'
-import {
-  ALL_SICKS_TYPE,
-  valueByType,
-} from './constants'
 
 const int = format(',d')
 
@@ -17,35 +13,32 @@ export default class Tooltip {
   }
 
   show({
-    data,
-    right,
-    rect,
-    type,
+    data: {
+      cases = null,
+      recover = null,
+      deaths = null,
+    },
+    right = 'auto',
+    left = 'auto',
   }) {
-    const position = [
-      right ? 'right' : 'left',
-      `${right ? rect.right : rect.left}px`,
-    ]
     this.box.classed('active', true)
-      .style(...position)
-      .style(right ? 'left' : 'right', 'auto')
+      .style('left', left)
+      .style('right', right)
 
-    const value = valueByType[type]
-
-    const cases = int(value('cases', data))
-    let recover = int(value('recover', data))
-    let deaths = int(value('deaths', data))
-
-    this.box.append('div')
-      .classed('cases value', true)
-      .text(cases)
-    if (type !== ALL_SICKS_TYPE) {
+    if (cases !== null) {
+      this.box.append('div')
+        .classed('cases value', true)
+        .text(int(cases))
+    }
+    if (recover !== null) {
       this.box.append('div')
         .classed('recover value', true)
-        .text(recover)
+        .text(int(recover))
+    }
+    if (deaths !== null) {
       this.box.append('div')
         .classed('deaths value', true)
-        .text(deaths)
+        .text(int(deaths))
     }
   }
 

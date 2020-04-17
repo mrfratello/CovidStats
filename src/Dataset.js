@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { select } from 'd3-selection'
-import { serverToDate, serverShortToDate } from './format/date'
+import { serverToDate, serverShortToDate, cacheDate } from './format/date'
 import {
   webpackReducer,
   compose,
@@ -9,6 +9,7 @@ import {
 class Dataset {
   location = 'ru'
   waiting = null
+  cache = cacheDate(Date.now())
 
   constructor() {
     this.convertHistory = this.converter()
@@ -35,12 +36,16 @@ class Dataset {
   }
 
   requestData() {
-    return axios.get(`/api/json/history.${this.location}.json`)
+    return axios.get(`/api/json/history.${this.location}.json`, {
+      params: { cache: this.cache },
+    })
       .then((response) => this.convertHistory(response.data))
   }
 
   requestInfo() {
-    return axios.get(`/api/json/by-territory.${this.location}.json`)
+    return axios.get(`/api/json/by-territory.${this.location}.json`, {
+      params: { cache: this.cache },
+    })
       .then((response) => response.data.date)
       .then((date) => serverToDate(date))
   }
