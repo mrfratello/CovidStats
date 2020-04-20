@@ -40,3 +40,13 @@ selectAll('.periodOffsetChartTypeBtn')
       })
     periodChart.onUpdateType(chartType)
   })
+
+selectAll('.periodOffsetChartOffsetBtn')
+  .on('click', function() {
+    const chartOffset = this.dataset.value
+    selectAll('.periodOffsetChartOffsetBtn')
+      .each(function() {
+        select(this).classed('active', this.dataset.value === chartOffset)
+      })
+    periodChart.onUpdateOffset(chartOffset)
+  })

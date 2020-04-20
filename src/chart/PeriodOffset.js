@@ -137,51 +137,22 @@ export class PeriodOffset extends BaseChart {
   }
 
   renderBars() {
-    const me = this
     const bandWidth = this.timeScale.bandwidth() / 2
 
-    this.overBars = this.svg
-      .append('g')
-        .selectAll('.overBar')
-        .data(this.dataset, ({ date }) => date)
-        .enter()
-        .append('rect')
-          .classed('overBar', true)
-          .attr('x', ({ date }) => this.timeScale(shortDate(date)))
-          .attr('y', () => this.countScale.range()[1])
-          .attr('width', this.timeScale.bandwidth())
-          .attr('height', () => this.innerHeight)
-          .on('mouseover', function(data, index) {
-            const rect = select(this)
-            me.tooltip.show({
-              data: {
-                cases: data.casesDay,
-                recover: data.recoverDay,
-                deaths: data.deathsDay,
-              },
-              right: index > me.dataset.length / 2
-                ? me.width - (+rect.attr('x') + +rect.attr('width')) + 'px'
-                : 'auto',
-              left: index <= me.dataset.length / 2
-                ? rect.attr('x') + 'px'
-                : 'auto',
-            })
-          })
-          .on('mouseout', () => {
-            me.tooltip.hide()
-          })
+    this.overBars = this.svg.append('g')
+    this.overBars.selectAll('.overBar')
+      .data(this.dataset, ({ date }) => date)
+      .join(
+        (enter) => this._enterOvers(enter),
+      )
 
     this.cases = this.svg.append('g')
       .classed('cases', true)
     this.cases.selectAll('.caseBar')
-      .data(this.dataset, ({ date }) => date)
-      .enter()
-      .append('rect')
-        .classed('caseBar', true)
-        .attr('x', ({ date }) => this.timeScale(shortDate(date)))
-        .attr('y', () => this.countScale.range()[0])
-        .attr('width', bandWidth)
-        .attr('height', () => 0)
+      .data(this.dataset, ({ dateOffset }) => dateOffset)
+      .join(
+        (enter) => this._enterCases(enter)
+      )
 
     this.recover = this.svg.append('g')
       .classed('recover', true)
@@ -211,15 +182,28 @@ export class PeriodOffset extends BaseChart {
   updateBars() {
     const bandWidth = this.timeScale.bandwidth() / 2
 
-    this.overBars
+    this.overBars.selectAll('.overBar')
       .data(this.dataset, ({ date }) => date)
+      .join(
+        (enter) => this._enterOvers(enter),
+        (update) => update,
+        (exit) => exit.remove(),
+      )
       .attr('x', ({ date }) => this.timeScale(shortDate(date)))
       .attr('y', () => this.countScale.range()[1])
       .attr('width', this.timeScale.bandwidth())
       .attr('height', () => this.innerHeight)
 
     this.cases.selectAll('.caseBar')
-      .data(this.dataset, ({ date }) => date)
+      .data(this.dataset, ({ dateOffset }) => dateOffset)
+      .join(
+        (enter) => this._enterCases(enter),
+        (update) => update,
+        (exit) => exit
+          .transition(transition)
+          .attr('x', ({ date }) => this.timeScale(shortDate(date)) + 100)
+          .remove()
+      )
       .transition(transition)
       .attr('x', ({ date }) => this.timeScale(shortDate(date)) + bandWidth)
       .attr('width', bandWidth)
@@ -239,6 +223,45 @@ export class PeriodOffset extends BaseChart {
       .attr('width', bandWidth)
       .attr('y', (item) => this.countScale(item.sumDay))
       .attr('height', (item) => this.countScale(item.recoverDay) - this.countScale(item.sumDay))
+  }
+
+  _enterOvers(enter) {
+    const me = this
+
+    return enter.append('rect')
+      .classed('overBar', true)
+      .attr('x', ({ date }) => this.timeScale(shortDate(date)))
+      .attr('y', () => this.countScale.range()[1])
+      .attr('width', this.timeScale.bandwidth())
+      .attr('height', () => this.innerHeight)
+      .on('mouseover', function(data, index) {
+        const rect = select(this)
+        me.tooltip.show({
+          data: {
+            cases: data.casesDay,
+            recover: data.recoverDay,
+            deaths: data.deathsDay,
+          },
+          right: index > me.dataset.length / 2
+            ? me.width - (+rect.attr('x') + +rect.attr('width')) + 'px'
+            : 'auto',
+          left: index <= me.dataset.length / 2
+            ? rect.attr('x') + 'px'
+            : 'auto',
+        })
+      })
+      .on('mouseout', () => {
+        me.tooltip.hide()
+      })
+  }
+
+  _enterCases(enter) {
+    return enter.append('rect')
+      .classed('caseBar', true)
+      .attr('x', ({ date }) => this.timeScale(shortDate(date)))
+      .attr('y', () => this.countScale.range()[0])
+      .attr('width', this.timeScale.bandwidth() / 2)
+      .attr('height', () => 0)
   }
 
   onResize() {
