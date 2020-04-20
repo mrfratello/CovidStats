@@ -5,12 +5,14 @@ import { axisLeft , axisBottom } from 'd3-axis'
 import { shortDate } from '../format/date'
 import dataset from '../Dataset'
 import transition from '../transition'
+import { DYNAMIC_TYPE, TOTAL_TYPE } from '../constants'
 import BaseChart from './Base'
 
 export class PeriodOffset extends BaseChart {
   marginBottom = 80
   offsetDays = 13
   maxTickWidth = 35
+  type = DYNAMIC_TYPE
 
   constructor(selector) {
     super(selector)
@@ -37,9 +39,19 @@ export class PeriodOffset extends BaseChart {
     this.dataset = this.pureDataset
       .slice(this.offsetDays)
       .map((item, i) => ({
-        ...item,
-        casesDay: this.pureDataset[i].casesDay,
-        sumDay: item.recoverDay + item.deathsDay,
+        date: item.date,
+        recoverDay: this.type === DYNAMIC_TYPE
+          ? item.recoverDay
+          : item.recover,
+        deathsDay: this.type === DYNAMIC_TYPE
+          ? item.deathsDay
+          : item.deaths,
+        casesDay: this.type === DYNAMIC_TYPE
+          ? this.pureDataset[i].casesDay
+          : this.pureDataset[i].cases,
+        sumDay: this.type === DYNAMIC_TYPE
+          ? item.recoverDay + item.deathsDay
+          : item.recover + item.deaths,
         dateOffset: this.pureDataset[i].date,
       }))
   }
@@ -212,14 +224,16 @@ export class PeriodOffset extends BaseChart {
       .attr('x', ({ date }) => this.timeScale(shortDate(date)) + bandWidth)
       .attr('width', bandWidth)
       .attr('y', (item) => this.countScale(item.casesDay))
-      .attr('height', (item) => this.height - this.marginBottom - this.countScale(item.casesDay))
+      .attr('height', (item) => this.countScale(0) - this.countScale(item.casesDay))
     this.recover.selectAll('.recoverBar')
+      .data(this.dataset, ({ date }) => date)
       .transition(transition)
       .attr('x', ({ date }) => this.timeScale(shortDate(date)))
       .attr('width', bandWidth)
       .attr('y', (item) => this.countScale(item.recoverDay))
       .attr('height', (item) => this.countScale(0) - this.countScale(item.recoverDay))
     this.deaths.selectAll('.deathsBar')
+      .data(this.dataset, ({ date }) => date)
       .transition(transition)
       .attr('x', ({ date }) => this.timeScale(shortDate(date)))
       .attr('width', bandWidth)
@@ -233,6 +247,23 @@ export class PeriodOffset extends BaseChart {
     this.updateScales()
     this.updateAxes()
     this.updateBars()
+  }
+
+  onUpdateOptions() {
+    this.prepareDataset()
+    this.updateScales()
+    this.updateAxes()
+    this.updateBars()
+  }
+
+  onUpdateType(type) {
+    this.type = type
+    this.onUpdateOptions()
+  }
+
+  onUpdateOffset(offset) {
+    this.offsetDays = offset
+    this.onUpdateOptions()
   }
 }
 

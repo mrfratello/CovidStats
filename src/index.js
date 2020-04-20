@@ -30,3 +30,13 @@ selectAll('.chartTypeBtn')
       })
     simpleChart.setType(chartType)
   })
+
+selectAll('.periodOffsetChartTypeBtn')
+  .on('click', function() {
+    const chartType = this.dataset.value
+    selectAll('.periodOffsetChartTypeBtn')
+      .each(function() {
+        select(this).classed('active', this.dataset.value === chartType)
+      })
+    periodChart.onUpdateType(chartType)
+  })

@@ -7,3 +7,6 @@ export const valueByType = {
   [PERIOD_TYPE]: (prop, item) => item[`${prop}Day`],
   [ALL_SICKS_TYPE]: (prop, item) => item[`${prop}Moment`],
 }
+
+export const DYNAMIC_TYPE = 'dynamic'
+export const TOTAL_TYPE = 'total'

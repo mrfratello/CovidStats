@@ -89,9 +89,10 @@
         Человек перестает быть больным, когда он вылечился или умер от болезни.
         Эта динамика аналогия загруженности медицинской системы.
       </p>
+      <p><a class="go-to-chart" href="#offset-chart">График со смещением ↓</a></p>
     </div>
   </div>
-  <div class="container-fluid screen">
+  <div id="offset-chart" class="container-fluid screen">
     <h2>Динамика новых случаев со смещением</h2>
     <div class="container content">
       <p>
@@ -105,6 +106,25 @@
         <div class="loading-content">
           Загрузка данных ...
         </div>
+      </div>
+    </div>
+    <div class="text-center">
+      <div class="btn-group btn-group-sm form-btn-group" role="group">
+        <button
+          type="button"
+          class="periodOffsetChartTypeBtn btn btn-info active"
+          data-value="dynamic"
+          >
+          Ежедневная динамика
+        </button>
+        <button
+          type="button"
+          class="periodOffsetChartTypeBtn btn btn-info"
+          data-value="total"
+          >
+          Нарастающим итогом
+        </button>
+
       </div>
     </div>
   </div>
