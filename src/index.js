@@ -1,5 +1,6 @@
 import { selectAll, select } from 'd3-selection'
 import './format'
+import { OFFSET_VALUES } from './constants'
 import SimpleChart from './chart/Simple'
 import PeriodChart from './chart/PeriodOffset'
 import './style/main.scss'
@@ -49,4 +50,13 @@ selectAll('.periodOffsetChartOffsetBtn')
         select(this).classed('active', this.dataset.value === chartOffset)
       })
     periodChart.onUpdateOffset(chartOffset)
+  })
+
+const offsetLabel = select('label[for=periodOffsetChartOffset]')
+select('.periodOffsetChartOffset')
+  .on('change', function() {
+    periodChart.onUpdateOffset(+this.value)
+  })
+  .on('input', function() {
+    offsetLabel.html(`Смещение на <em>${OFFSET_VALUES[this.value]}</em>`)
   })

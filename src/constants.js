@@ -10,3 +10,15 @@ export const valueByType = {
 
 export const DYNAMIC_TYPE = 'dynamic'
 export const TOTAL_TYPE = 'total'
+
+export const OFFSET_VALUES = {
+  '13': '2 недели',
+  '14': '15 дней',
+  '15': '16 дней',
+  '16': '17 дней',
+  '17': '18 дней',
+  '18': '19 дней',
+  '19': '20 дней',
+  '20': '3 недели',
+  '21': '22 дня',
+}

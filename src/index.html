@@ -101,78 +101,18 @@
         На графике можно грубо оценить количество выздоровевших по отношению к зараженным.
       </p>
     </div>
-    <div class="text-center">
-      <div class="btn-group btn-group-sm form-btn-group" role="group">
-        <button
-          type="button"
-          class="periodOffsetChartOffsetBtn btn btn-primary"
-          data-value="8"
+    <div class="container">
+      <div class="form-group">
+        <label for="periodOffsetChartOffset">Смещение на <em>2 недели</em></label>
+        <input
+          id="periodOffsetChartOffset"
+          type="range"
+          class="form-control-range periodOffsetChartOffset"
+          min="13"
+          max="21"
+          step="1"
+          value="13"
           >
-          9 дней
-        </button>
-        <button
-          type="button"
-          class="periodOffsetChartOffsetBtn btn btn-primary"
-          data-value="9"
-          >
-          10 дней
-        </button>
-        <button
-          type="button"
-          class="periodOffsetChartOffsetBtn btn btn-primary"
-          data-value="10"
-          >
-          11 дней
-        </button>
-        <button
-          type="button"
-          class="periodOffsetChartOffsetBtn btn btn-primary"
-          data-value="11"
-          >
-          12 дней
-        </button>
-        <button
-          type="button"
-          class="periodOffsetChartOffsetBtn btn btn-primary"
-          data-value="12"
-          >
-          13 дней
-        </button>
-        <button
-          type="button"
-          class="periodOffsetChartOffsetBtn btn btn-primary active"
-          data-value="13"
-          >
-          2 недели
-        </button>
-        <button
-          type="button"
-          class="periodOffsetChartOffsetBtn btn btn-primary"
-          data-value="14"
-          >
-          15 дней
-        </button>
-        <button
-          type="button"
-          class="periodOffsetChartOffsetBtn btn btn-primary"
-          data-value="15"
-          >
-          16 дней
-        </button>
-        <button
-          type="button"
-          class="periodOffsetChartOffsetBtn btn btn-primary"
-          data-value="16"
-          >
-          17 дней
-        </button>
-        <button
-          type="button"
-          class="periodOffsetChartOffsetBtn btn btn-primary"
-          data-value="17"
-          >
-          18 дней
-        </button>
       </div>
     </div>
     <div id="period-offset-chart" class="chart">
