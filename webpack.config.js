@@ -42,25 +42,15 @@ module.exports = (env) => {
           exclude: /node_modules/,
           use: 'babel-loader',
         },
-        // {
-        //   test: /\.(png|jpg|gif)$/,
-        //   use: [{
-        //       loader: 'file-loader',
-        //       options: {
-        //           outputPath: "images"
-        //       }
-        //   }],
-        // },
-        // {
-        //   test: /\.(woff|woff2|eot|ttf|otf|svg)$/i,
-        //   use: [{
-        //       loader: 'url-loader',
-        //       options: {
-        //           limit: 8192,
-        //           outputPath: "font"
-        //       }
-        //   }]
-        // }
+        {
+          test: /\.(png|jpg|gif)$/,
+          use: [{
+              loader: 'file-loader',
+              options: {
+                  outputPath: "images"
+              }
+          }],
+        },
       ],
     },
     plugins: [
