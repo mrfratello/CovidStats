@@ -19,9 +19,9 @@ export class PeriodOffset extends BaseChart {
     this.updateSizes()
 
     dataset.getAll()
-      .then(([data, updateTime]) => {
+      .then(({ data, updateDate }) => {
         this.render(data)
-        this.renderInfo(updateTime)
+        this.renderInfo(updateDate)
       })
   }
 

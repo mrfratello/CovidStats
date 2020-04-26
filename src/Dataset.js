@@ -30,6 +30,11 @@ class Dataset {
       this.requestData(),
       this.requestInfo(),
     ])
+      .then(([data, info]) => ({
+        data,
+        updateDate: info.date,
+        regions: info.items,
+      }))
       .finally(() => {
         body.classed('loaded', true)
       })
@@ -46,8 +51,10 @@ class Dataset {
     return axios.get(`/api/json/by-territory.${this.location}.json`, {
       params: { cache: this.cache },
     })
-      .then((response) => response.data.date)
-      .then((date) => serverToDate(date))
+      .then(({ data }) => ({
+        ...data,
+        date: serverToDate(data.date),
+      }))
   }
 
   ejectData(webpackModule, method) {

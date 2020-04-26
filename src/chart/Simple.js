@@ -29,9 +29,9 @@ export default class Chart extends BaseChart {
     this.svg.attr('id', 'simple')
 
     dataset.getAll()
-      .then(([data, updateTime]) => {
+      .then(({ data, updateDate }) => {
         this.render(data)
-        this.renderInfo(updateTime)
+        this.renderInfo(updateDate)
       })
   }
 
