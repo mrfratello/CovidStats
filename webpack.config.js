@@ -9,16 +9,20 @@ module.exports = (env) => {
     mode: production
       ? 'production'
       : 'development',
-    entry: [
-      // '@babel/polyfill',
-      './src/index.js'
-    ],
+    entry: {
+      index: './src/index.js',
+      map: './src/map.js',
+    },
     output: {
       path: path.resolve(__dirname, './dist'),
-      filename: 'build.js'
+      filename: '[name].build.js'
     },
-    resolve: {
-      extensions: ['.wasm', '.mjs', '.jsx', '.js', '.json']
+    optimization: {
+      splitChunks: {
+        chunks: 'all',
+        minSize: 1,
+        minChunks: 2,
+      },
     },
     module: {
       rules: [
@@ -58,6 +62,13 @@ module.exports = (env) => {
         filename: 'index.html',
         template: path.resolve(__dirname, './src/index.html'),
         hash: true,
+        chunks: ['index'],
+      }),
+      new HtmlWebpackPlugin({
+        filename: 'map.html',
+        template: path.resolve(__dirname, './src/map.html'),
+        hash: true,
+        chunks: ['map'],
       }),
       new MiniCssExtractPlugin({
         filename: '[name].css'

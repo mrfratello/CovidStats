@@ -75,3 +75,25 @@ $deaths-color: #ff6666;
     display: block;
   }
 }
+
+.territory-chart {
+  $territory-stroke-color: #4693c8;
+
+  svg {
+    background: lighten($territory-stroke-color, 30%);
+  }
+
+  .region {
+    position: relative;
+    stroke: $territory-stroke-color;
+    stroke-width: .5px;
+    stroke-linejoin: round;
+    stroke-opacity: .5;
+
+    &:hover {
+      stroke: darken($territory-stroke-color, 50%);
+      stroke-opacity: 1;
+      z-index: 100;
+    }
+  }
+}
