@@ -6,7 +6,19 @@
   <title>Covid Stats Russia</title>
 </head>
 <body>
-  <div class="container-fluid screen">
+  <nav class="navbar navbar-expand-md navbar-dark bg-primary">
+    <span class="navbar-brand mb-0 h1">Covid Stat</span>
+    <button class="navbar-toggler" type="button">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse">
+      <div class="navbar-nav">
+        <a class="nav-item nav-link" href="#chart-box">Графики</a>
+        <a class="nav-item nav-link" href="/map.html">Карта</a>
+      </div>
+    </div>
+  </nav>
+  <div class="container-fluid screen screen_top">
     <div class="container content">
       <h1>Статистика заражения инфекцией Covid-19 в России</h1>
       <p>
@@ -91,8 +103,8 @@
         Человек перестает быть больным, когда он вылечился или умер от болезни.
         Эта динамика аналогия загруженности медицинской системы.
       </p>
-      <p><a class="go-to-chart" href="#offset-chart">График со смещением ↓</a></p>
     </div>
+    <p><a class="go-to-chart" href="#offset-chart">График со смещением ↓</a></p>
   </div>
   <div id="offset-chart" class="container-fluid screen d-flex flex-column">
     <h2>Динамика новых случаев со смещением</h2>

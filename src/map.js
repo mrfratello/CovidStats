@@ -1,5 +1,6 @@
 import './format'
+import './ui/navbar'
 import TerritoryChart from './chart/Territory'
 import './style/main.scss'
 
-const territoryChart = new TerritoryChart('territory-chart')
+new TerritoryChart('territory-chart')

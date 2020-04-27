@@ -6,7 +6,19 @@
   <title>Covid Stats Russia &mdash; Map</title>
 </head>
 <body>
-  <div class="container d-flex flex-column screen content">
+  <nav class="navbar navbar-expand-md navbar-dark bg-primary">
+    <a class="navbar-brand" href="/">Covid Stat</a>
+    <button class="navbar-toggler" type="button">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse">
+      <div class="navbar-nav">
+        <a class="nav-item nav-link" href="/#chart-box">Графики</a>
+        <span class="nav-item nav-link active">Карта</span>
+      </div>
+    </div>
+  </nav>
+  <div class="container d-flex flex-column screen screen_top content">
     <h1>Карта заражения инфекцией Covid-19 в России</h1>
     <div id="territory-chart" class="chart territory-chart"></div>
     <div id="tooltip" class="map-tooltip">&nbsp;</div>

@@ -10,10 +10,19 @@ $btn-focus-width: 0;
 
 @import "~bootstrap/scss/bootstrap";
 
+
 .screen {
+  $nav-bar-height: 56px;
+  $padding: 20px;
+
   min-height: 100vh;
-  padding-top: 20px;
-  padding-bottom: 20px;
+  padding-top: $padding;
+  padding-bottom: $padding;
+
+  &_top {
+    margin-top: -$nav-bar-height;
+    padding-top: $nav-bar-height + $padding;
+  }
 }
 
 .covid-background {

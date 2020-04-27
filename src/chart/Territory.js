@@ -24,7 +24,7 @@ export class Territory extends BaseChart {
 
     Promise.all([
       dataset.getAll(),
-      axios.get('/api/json/new.regions.geojson')
+      axios.get('/api/json/regions.geojson')
         .then(({ data }) => data)
     ])
       .then(([{ regions }, geo]) => {
