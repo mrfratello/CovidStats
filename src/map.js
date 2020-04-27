@@ -1,3 +1,4 @@
+import './format'
 import TerritoryChart from './chart/Territory'
 import './style/main.scss'
 
