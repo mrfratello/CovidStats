@@ -20,7 +20,21 @@
   </nav>
   <div class="container d-flex flex-column screen screen_top content">
     <h1>Карта заражения инфекцией Covid-19 в России</h1>
-    <div id="territory-chart" class="chart territory-chart"></div>
+    <div id="territory-chart" class="chart territory-chart">
+      <div class="loading">
+        <div class="loading-content">
+          Загрузка данных ...
+        </div>
+      </div>
+      <div class="progress load-progress">
+        <div
+          class="progress-bar progress-bar-striped progress-bar-animated"
+          role="progressbar"
+          style="width: 0%"
+          >
+        </div>
+      </div>
+    </div>
     <div id="tooltip" class="map-tooltip">&nbsp;</div>
   </div>
   <div class="powr-comments" id="d611ad1a_1586129861"></div>

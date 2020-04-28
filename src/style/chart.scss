@@ -100,6 +100,13 @@ $deaths-color: #ff6666;
       z-index: 100;
     }
   }
+
+  .progress {
+    position: absolute;
+    z-index: 10;
+    top: 0;
+    width: 100%;
+  }
 }
 
 .map-tooltip {

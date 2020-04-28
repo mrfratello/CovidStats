@@ -17,36 +17,67 @@ export class Territory extends BaseChart {
   marginBottom = 60
   marginTop = 30
   meanRatio = .6
+  mapParts = 10
+  dataset = {
+    type: 'FeatureCollection',
+    features: [],
+  }
 
   constructor(selector) {
     super(selector)
     this.updateSizes()
 
-    Promise.all([
-      dataset.getAll(),
-      axios.get('/api/json/regions.geojson')
-        .then(({ data }) => data)
-    ])
-      .then(([{ regions }, geo]) => {
-        this.merdeDataset(geo, regions)
+    this.progress = this.container.select('.load-progress')
+
+    dataset.getAll()
+      .then(({ regions }) => {
+        this.setStatData(regions)
         this.render()
+        this.getRegions()
       })
   }
 
-  merdeDataset(geo, regions) {
-    const confirmed = regions.map((region) => region.confirmed)
+  setStatData(byRegions) {
+    this.byRegions = byRegions
+
+    const confirmed = byRegions.map((region) => region.confirmed)
     this.scale = scaleDiverging()
       .domain([0, mean(confirmed), max(confirmed)])
       .range([0, this.meanRatio, 1])
-    this.dataset = {
-      type: geo.type,
-      features: geo.features.map((feature) => ({
-        ...feature,
-        properties: regions.find((region) => (
-          region.territoryName === feature.properties.territoryName
-        )),
-      }))
+  }
+
+  getRegions(index = 0) {
+    if (index >= this.mapParts) {
+      this.progress.select('.progress-bar')
+        .style('width', '100%')
+      setTimeout(() => {
+        this.progress.remove()
+      }, 1000)
+      return
     }
+    this.progress.select('.progress-bar')
+      .style('width', `${index / this.mapParts * 100}%`)
+    axios.get(`/api/json/regions/part-${index}.geojson`)
+      .then(({ data }) => {
+        this.merdeDataset(data)
+        this.updateRegions()
+        this.getRegions(index + 1)
+      })
+  }
+
+  merdeDataset(geo) {
+    geo.features.forEach((feature) => {
+      this.dataset.features.push({
+        type: feature.type,
+        geometry: feature.geometry,
+        properties: feature.properties,
+        stat: this.byRegions
+          .find((region) => (
+            region.territoryName === feature.properties.name
+            || region.territoryName === feature.properties.full_name
+          ))
+      })
+    })
   }
 
   updatePath() {
@@ -59,19 +90,12 @@ export class Territory extends BaseChart {
   }
 
   render() {
-    this.updatePath()
     this.renderAxes()
     this.updateAxes()
 
     this.map = this.svg.append('g')
       .classed('map', true)
       .attr('transform', `translate(${this.marginLeft}, ${this.marginTop})`)
-
-    this.map.selectAll('path.region')
-      .data(this.dataset.features)
-      .join(
-        (enter) => this._enterRegion(enter),
-      )
   }
 
   renderAxes() {
@@ -122,19 +146,29 @@ export class Territory extends BaseChart {
       .style('right', `${this.marginRight}px`)
   }
 
+  updateRegions() {
+    this.updatePath()
+    this.map.selectAll('path.region')
+      .data(this.dataset.features, (d) => d.properties.name)
+      .join(
+        (enter) => this._enterRegion(enter),
+        (update) => this._updateRegion(update),
+      )
+  }
+
   _enterRegion(enter) {
     const tooltip = select('#tooltip')
 
     return enter.append('path')
       .classed('region', true)
       .attr('d', this.geoPath)
-      .attr('fill', (data) => interpolateOranges(this.scale(data.properties.confirmed)))
-      .on('mouseover', function({ properties }) {
+      .attr('fill', ({ stat }) => interpolateOranges(this.scale(stat.confirmed)))
+      .on('mouseover', function({ properties, stat }) {
         tooltip.html(`
-          ${properties.territoryName} &mdash;
-          <span class="cases">${properties.confirmed}</span>&nbsp;
-          <span class="recover">${properties.recovered}</span>&nbsp;
-          <span class="deaths">${properties.deaths}</span>&nbsp;
+          ${properties.name} &mdash;
+          <span class="cases">${stat && stat.confirmed}</span>&nbsp;
+          <span class="recover">${stat && stat.recovered}</span>&nbsp;
+          <span class="deaths">${stat && stat.deaths}</span>&nbsp;
         `)
       })
       .on('mouseout', () => {
@@ -142,13 +176,16 @@ export class Territory extends BaseChart {
       })
   }
 
+  _updateRegion(update) {
+    return update.attr('d', this.geoPath)
+  }
+
   onResize() {
     super.onResize()
 
     this.updatePath()
     this.updateAxes()
-    this.map.selectAll('path.region')
-      .attr('d', this.geoPath)
+    this.updateRegions()
   }
 }
 
