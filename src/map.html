@@ -20,6 +20,38 @@
   </nav>
   <div class="container d-flex flex-column screen screen_top content">
     <h1>Карта заражения инфекцией Covid-19 в России</h1>
+    <div class="text-center">
+      <div class="btn-group btn-group-sm form-btn-group" role="group">
+        <button
+          type="button"
+          class="showTypeBtn btn btn-info active"
+          data-value="confirmed"
+          >
+          Заразились
+        </button>
+        <button
+          type="button"
+          class="showTypeBtn btn btn-info"
+          data-value="recovered"
+          >
+          Вылечились
+        </button>
+        <button
+          type="button"
+          class="showTypeBtn btn btn-info"
+          data-value="deaths"
+          >
+          Умерли
+        </button>
+        <!-- <button
+          type="button"
+          class="showTypeBtn btn btn-info"
+          data-value="confirmed_density"
+          >
+          Плотность заражения
+        </button> -->
+      </div>
+    </div>
     <div id="territory-chart" class="chart territory-chart">
       <div class="loading">
         <div class="loading-content">

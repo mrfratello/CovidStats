@@ -7,25 +7,37 @@ import {
   geoPath,
   geoConicEqualArea,
 } from 'd3-geo'
-import { interpolateOranges } from 'd3-scale-chromatic'
+import {
+  interpolateOranges,
+  interpolateGreens,
+  interpolateReds,
+} from 'd3-scale-chromatic'
+import transition from '../transition'
 import dataset from '../Dataset'
 import BaseChart from './Base'
 
 export class Territory extends BaseChart {
   marginLeft = 30
   marginRight = 30
-  marginBottom = 60
+  marginBottom = 40
   marginTop = 30
-  meanRatio = .6
+  meanRatio = .5
   mapParts = 10
+  type = 'confirmed'
   dataset = {
     type: 'FeatureCollection',
     features: [],
+  }
+  interpolations = {
+    confirmed: interpolateOranges,
+    recovered: interpolateGreens,
+    deaths: interpolateReds,
   }
 
   constructor(selector) {
     super(selector)
     this.updateSizes()
+    this.initGradients()
 
     this.progress = this.container.select('.load-progress')
 
@@ -37,12 +49,45 @@ export class Territory extends BaseChart {
       })
   }
 
+  initGradients() {
+    const interpolations = this.interpolations
+    this.svg.append('defs')
+      .selectAll('linearGradient')
+      .data(['confirmed', 'recovered', 'deaths'])
+      .enter()
+      .append('linearGradient')
+      .attr('id', (d) => `${d}Gradient`)
+      .each(function(type) {
+        select(this).selectAll('stop')
+          .data([0, 25, 50, 75, 100])
+          .enter()
+          .append('stop')
+          .attr('offset', (d) => `${d}%`)
+          .attr('stop-color', (d) => interpolations[type](d / 100))
+      })
+  }
+
+  getColor(value) {
+    return this.interpolations[this.type](
+      this.scale(value)
+    )
+  }
+
   setStatData(byRegions) {
     this.byRegions = byRegions
 
+    this.scaleDict = {}
     const confirmed = byRegions.map((region) => region.confirmed)
-    this.scale = scaleDiverging()
+    this.scaleDict.confirmed = scaleDiverging()
       .domain([0, mean(confirmed), max(confirmed)])
+      .range([0, this.meanRatio, 1])
+    const recovered = byRegions.map((region) => region.recovered)
+    this.scaleDict.recovered = scaleDiverging()
+      .domain([0, mean(recovered), max(recovered)])
+      .range([0, this.meanRatio, 1])
+    const deaths = byRegions.map((region) => region.deaths)
+    this.scaleDict.deaths = scaleDiverging()
+      .domain([0, mean(deaths), max(deaths)])
       .range([0, this.meanRatio, 1])
   }
 
@@ -50,6 +95,7 @@ export class Territory extends BaseChart {
     if (index >= this.mapParts) {
       this.progress.select('.progress-bar')
         .style('width', '100%')
+      this.setType(this.type)
       setTimeout(() => {
         this.progress.remove()
       }, 1000)
@@ -91,7 +137,6 @@ export class Territory extends BaseChart {
 
   render() {
     this.renderAxes()
-    this.updateAxes()
 
     this.map = this.svg.append('g')
       .classed('map', true)
@@ -101,13 +146,15 @@ export class Territory extends BaseChart {
   renderAxes() {
     this.chromaticLeftAxisBox = this.svg.append('g')
     this.chromaticRightAxisBox = this.svg.append('g')
-    this.chromaticColor = this.container
-      .append('div')
-      .classed('chromatic-scale', true)
-      .style('bottom', '-200px')
+    this.chromaticColor = this.svg.append('rect')
+      .attr('height', 10)
+      .attr('x', this.marginLeft)
+      .attr('y', this.height)
+      .attr('fill', 'grey')
   }
 
   updateAxes() {
+    const yPosition = this.height - this.marginBottom + 15
     const sizes = [
       this.marginLeft,
       this.marginLeft + this.innerWidth * this.meanRatio,
@@ -119,7 +166,8 @@ export class Territory extends BaseChart {
       .domain(domain.slice(0, 2))
 
     this.chromaticLeftAxisBox
-      .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
+      .attr('transform', `translate(0, ${yPosition})`)
+      .transition(transition)
       .call(
         axisBottom()
           .scale(scaleLeft)
@@ -131,7 +179,8 @@ export class Territory extends BaseChart {
       .domain(domain.slice(1))
 
     this.chromaticRightAxisBox
-      .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
+      .attr('transform', `translate(0, ${yPosition})`)
+      .transition(transition)
       .call(
         axisBottom()
           .scale(scaleRight)
@@ -140,10 +189,10 @@ export class Territory extends BaseChart {
       )
 
     this.chromaticColor
-      .classed('chromatic-scale_color_orange', true)
-      .style('bottom', `${this.marginBottom}px`)
-      .style('left', `${this.marginLeft}px`)
-      .style('right', `${this.marginRight}px`)
+      .transition(transition)
+      .attr('y', yPosition - 10)
+      .attr('width', this.innerWidth)
+      .attr('fill', `url(#${this.type}Gradient)`)
   }
 
   updateRegions() {
@@ -152,8 +201,8 @@ export class Territory extends BaseChart {
       .data(this.dataset.features, (d) => d.properties.name)
       .join(
         (enter) => this._enterRegion(enter),
-        (update) => this._updateRegion(update),
       )
+      .attr('d', this.geoPath)
   }
 
   _enterRegion(enter) {
@@ -161,8 +210,7 @@ export class Territory extends BaseChart {
 
     return enter.append('path')
       .classed('region', true)
-      .attr('d', this.geoPath)
-      .attr('fill', ({ stat }) => interpolateOranges(this.scale(stat.confirmed)))
+      .attr('fill', '#d1d1d1')
       .on('mouseover', function({ properties, stat }) {
         tooltip.html(`
           ${properties.name} &mdash;
@@ -176,16 +224,21 @@ export class Territory extends BaseChart {
       })
   }
 
-  _updateRegion(update) {
-    return update.attr('d', this.geoPath)
-  }
-
   onResize() {
     super.onResize()
 
     this.updatePath()
     this.updateAxes()
     this.updateRegions()
+  }
+
+  setType(type) {
+    this.type = type
+    this.scale = this.scaleDict[type]
+    this.updateAxes()
+    this.map.selectAll('path.region')
+      .transition(transition)
+      .attr('fill', ({ stat }) => this.getColor(stat[this.type]))
   }
 }
 
