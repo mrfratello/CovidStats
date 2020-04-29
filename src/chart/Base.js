@@ -4,8 +4,8 @@ import { fullDate } from '../format/date'
 import Tooltip from '../Tooltip'
 
 export default class Base {
-  marginLeft = 50
-  marginRight = 30
+  marginLeft = 30
+  marginRight = 50
   marginBottom = 30
   marginTop = 42
   svg = null

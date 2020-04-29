@@ -1,7 +1,7 @@
 import { max } from 'd3-array'
 import { select } from 'd3-selection'
 import { scaleBand, scaleLinear, scalePow } from 'd3-scale'
-import { axisLeft, axisBottom } from 'd3-axis'
+import { axisRight, axisBottom } from 'd3-axis'
 import { shortDate } from '../format/date'
 import dataset from '../Dataset'
 import BaseChart from './Base'
@@ -78,13 +78,13 @@ export default class Chart extends BaseChart {
   }
 
   renderAxis() {
-    this.casesAxis = axisLeft()
+    this.casesAxis = axisRight()
       .tickSizeOuter(0)
       .scale(this.scale)
 
     this.svg.append('g')
       .classed('cound_axes', true)
-      .attr('transform', `translate(${this.marginLeft}, 0)`)
+      .attr('transform', `translate(${this.marginLeft + this.innerWidth}, 0)`)
       .call(this.casesAxis)
 
     this.timeAxes = axisBottom()

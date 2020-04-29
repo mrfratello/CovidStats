@@ -1,7 +1,7 @@
 import { select } from 'd3-selection'
 import { max } from 'd3-array'
 import { scaleBand, scaleLinear } from 'd3-scale'
-import { axisLeft , axisBottom } from 'd3-axis'
+import { axisRight , axisBottom } from 'd3-axis'
 import { shortDate } from '../format/date'
 import dataset from '../Dataset'
 import transition from '../transition'
@@ -76,7 +76,7 @@ export class PeriodOffset extends BaseChart {
   }
 
   renderAxes() {
-    this.countAxis = axisLeft()
+    this.countAxis = axisRight()
       .tickSizeOuter(0)
     this.countAxisBox = this.svg.append('g')
       .classed('count_axis', true)
@@ -103,7 +103,7 @@ export class PeriodOffset extends BaseChart {
 
     this.countAxisBox
       .transition(transition)
-      .attr('transform', `translate(${this.marginLeft}, 0)`)
+      .attr('transform', `translate(${this.marginLeft + this.innerWidth}, 0)`)
       .call(this.countAxis)
 
     const tickTextOverBars = Math.ceil(this.maxTickWidth / this.timeScale.bandwidth())
