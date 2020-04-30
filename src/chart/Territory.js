@@ -14,9 +14,13 @@ import {
   interpolateGreens,
   interpolateReds,
 } from 'd3-scale-chromatic'
+import { format } from 'd3-format'
 import transition from '../transition'
 import dataset from '../Dataset'
 import BaseChart from './Base'
+
+const int = format(',d')
+const signInt = format('+,d')
 
 export class Territory extends BaseChart {
   marginLeft = 30
@@ -219,22 +223,40 @@ export class Territory extends BaseChart {
   }
 
   _enterRegion(enter) {
+    const me = this
     const tooltip = select('#tooltip')
 
     return enter.append('path')
       .classed('region', true)
       .attr('fill', '#d1d1d1')
       .on('mouseover', function({ properties, stat }) {
+        let confirmed = '?'
+        let recovered = '?'
+        let deaths = '?'
+        if (stat) {
+          confirmed = me.getTooltipValue(stat, 'confirmed')
+          recovered = me.getTooltipValue(stat, 'recovered')
+          deaths = me.getTooltipValue(stat, 'deaths')
+        }
         tooltip.html(`
-          ${properties.name} &mdash;
-          <span class="cases">${stat && stat.confirmed}</span>&nbsp;
-          <span class="recover">${stat && stat.recovered}</span>&nbsp;
-          <span class="deaths">${stat && stat.deaths}</span>&nbsp;
+          ${properties.name}
+          <span class="cases">${confirmed}</span>&nbsp;
+          <span class="recover">${recovered}</span>&nbsp;
+          <span class="deaths">${deaths}</span>&nbsp;
         `)
       })
       .on('mouseout', () => {
         tooltip.html('&nbsp;')
       })
+  }
+
+  getTooltipValue(stat, type) {
+    let value = int(stat[type])
+    const inc = stat[`${type}Inc`]
+    if (inc) {
+      value += ` (${signInt(inc)})`
+    }
+    return value
   }
 
   onResize() {
