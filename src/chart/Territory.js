@@ -1,4 +1,5 @@
 import axios from 'axios'
+import isMobile from 'ismobilejs'
 import { max, mean } from 'd3-array'
 import { select } from 'd3-selection'
 import { scaleDiverging, scaleLinear } from 'd3-scale'
@@ -6,6 +7,7 @@ import { axisBottom } from 'd3-axis'
 import {
   geoPath,
   geoConicEqualArea,
+  geoEquirectangular,
 } from 'd3-geo'
 import {
   interpolateOranges,
@@ -22,7 +24,10 @@ export class Territory extends BaseChart {
   marginBottom = 40
   marginTop = 30
   meanRatio = .5
-  mapParts = 10
+
+  mapParts = 1
+  VERSION = 'v1.1'
+
   type = 'confirmed'
   dataset = {
     type: 'FeatureCollection',
@@ -101,9 +106,16 @@ export class Territory extends BaseChart {
       }, 1000)
       return
     }
+    const width = this.mapParts !== 1
+      ? index / this.mapParts * 100
+      : 100
     this.progress.select('.progress-bar')
-      .style('width', `${index / this.mapParts * 100}%`)
-    axios.get(`/api/json/regions/part-${index}.geojson`)
+      .style('width', `${width}%`)
+    let filename = `part-${index}.${this.VERSION}`
+    if (isMobile(window.navigator).phone) {
+      filename += '.slim'
+    }
+    axios.get(`/api/json/regions/${filename}.geojson`)
       .then(({ data }) => {
         this.merdeDataset(data)
         this.updateRegions()
@@ -130,6 +142,7 @@ export class Territory extends BaseChart {
     const projection = geoConicEqualArea()
       .parallels([100, 50])
       .rotate([-100, 0])
+      // .rotate([-100, -45])
       .fitSize([this.innerWidth, this.innerHeight], this.dataset)
     this.geoPath = geoPath()
       .projection(projection)
