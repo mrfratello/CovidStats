@@ -1,6 +1,7 @@
 import { selectAll, select } from 'd3-selection'
 import './format'
 import './ui/navbar'
+import './ui/scrollLink'
 import { OFFSET_VALUES } from './constants'
 import SimpleChart from './chart/Simple'
 import PeriodChart from './chart/PeriodOffset'

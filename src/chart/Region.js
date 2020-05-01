@@ -77,10 +77,20 @@ export default class RegionChart extends BaseChart {
 
   setDataset(data) {
     this.renderData(data)
+    this.scrollToChart()
     this.prepareDataset(data.history)
     this.updateScales()
-    this.updateAxes()
-    this.updateBars()
+    setTimeout(() => {
+      this.updateAxes()
+      this.updateBars()
+    }, 500)
+  }
+
+  scrollToChart() {
+    window.scrollTo({
+      top: this.box.node().offsetTop,
+      behavior: 'smooth',
+    })
   }
 
   renderData(data) {
@@ -108,7 +118,7 @@ export default class RegionChart extends BaseChart {
       .reduce((res, item) => {
         const prev = res[res.length - 1]
         res.push({
-          date: serverShortToDate(item.date),
+          date: shortDate(serverShortToDate(item.date)),
           confirmed: item.confirmed,
           confirmedInc: item.confirmed - prev.confirmed,
         })
@@ -123,7 +133,7 @@ export default class RegionChart extends BaseChart {
       .domain([0, this.maxConfirmed])
       .range([this.height - this.marginBottom, this.marginTop])
     this.timeScale = scaleBand()
-      .domain(this.history.map((item) => shortDate(item.date)))
+      .domain(this.history.map((item) => item.date))
       .range([this.marginLeft, this.width - this.marginRight])
       .padding(0.1)
   }
@@ -147,7 +157,8 @@ export default class RegionChart extends BaseChart {
         (update) => update,
         (exit) => exit
           .transition(transition)
-          .attr('x', ({ date }) => this.timeScale(shortDate(date)) + this.width)
+          .attr('y', () => this.countScale.range()[0])
+          .attr('height', 0)
           .remove()
       )
       .transition(transition)
@@ -186,7 +197,7 @@ export default class RegionChart extends BaseChart {
   _enterCases(enter) {
     return enter.append('rect')
       .classed('caseBar', true)
-      .attr('x', ({ date }) => this.timeScale(shortDate(date)))
+      .attr('x', ({ date }) => this.timeScale(date))
       .attr('y', () => this.countScale.range()[0])
       .attr('width', this.timeScale.bandwidth())
       .attr('height', 0)
@@ -194,7 +205,7 @@ export default class RegionChart extends BaseChart {
 
   _updateBars(update) {
     return update
-      .attr('x', ({ date }) => this.timeScale(shortDate(date)))
+      .attr('x', ({ date }) => this.timeScale(date))
       .attr('width', this.timeScale.bandwidth())
   }
 
