@@ -35,6 +35,12 @@ $btn-focus-width: 0;
   padding-bottom: $input-btn-padding-y;
 }
 
+.hide-controls {
+  .control {
+    visibility: hidden;
+  }
+}
+
 @media (min-width: 768px) and (min-height: 480px) {
   .content {
     p {

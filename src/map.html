@@ -18,10 +18,10 @@
       </div>
     </div>
   </nav>
-  <div class="container d-flex flex-column screen screen_top content">
+  <div class="container d-flex flex-column screen screen_top content hide-controls" id="territory-chart-box">
     <h1>Карта заражения инфекцией Covid-19 в России</h1>
     <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-center">
-      <div class="btn-group btn-group-sm mb-1" role="group">
+      <div class="control btn-group btn-group-sm mb-1" role="group">
         <button
           type="button"
           class="showTypeBtn btn btn-info active"
@@ -86,7 +86,7 @@
     </div>
     <div id="tooltip" class="map-tooltip">&nbsp;</div>
   </div>
-  <div class="container-fluid screen d-flex flex-column" id="region-chart-box">
+  <div class="container-fluid screen d-flex flex-column hide-controls" id="region-chart-box">
     <h2>График зараженных по региону <em class="region-title"></em></h2>
     <p class="region-description text-center">
       <em>Выберите регион на карте</em>
@@ -96,6 +96,24 @@
         <div class="loading-content">
           Загрузка данных ...
         </div>
+      </div>
+    </div>
+    <div class="control text-center">
+      <div class="btn-group btn-group-sm form-btn-group" role="group">
+        <button
+          type="button"
+          class="regionTypeBtn btn btn-info active"
+          data-value="full"
+          >
+          Общее количество
+        </button>
+        <button
+          type="button"
+          class="regionTypeBtn btn btn-info"
+          data-value="inc"
+          >
+          Динамика новых случаев
+        </button>
       </div>
     </div>
   </div>

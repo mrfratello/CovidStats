@@ -13,6 +13,7 @@ export default class RegionChart extends BaseChart {
   marginTop = 18
   maxTickWidth = 35
   history = []
+  suffix = ''
 
   constructor(selector) {
     super(selector)
@@ -34,12 +35,14 @@ export default class RegionChart extends BaseChart {
       .tickSizeOuter(0)
     this.countAxisBox = this.svg.append('g')
       .classed('count_axis', true)
+      .attr('transform', `translate(${this.marginLeft + this.innerWidth}, 0)`)
 
     this.timeAxis = axisBottom()
       .tickSize(0)
       .tickPadding(10)
     this.timeAxisBox = this.svg.append('g')
       .classed('time_axis', true)
+      .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
   }
 
   updateAxes() {
@@ -79,10 +82,12 @@ export default class RegionChart extends BaseChart {
     this.renderData(data)
     this.scrollToChart()
     this.prepareDataset(data.history)
+    this.calculateMax()
     this.updateScales()
     setTimeout(() => {
       this.updateAxes()
       this.updateBars()
+      this.box.classed('hide-controls', false)
     }, 500)
   }
 
@@ -117,20 +122,24 @@ export default class RegionChart extends BaseChart {
     this.history = history
       .reduce((res, item) => {
         const prev = res[res.length - 1]
+        const inc = item.confirmed - prev.confirmed
         res.push({
           date: shortDate(serverShortToDate(item.date)),
           confirmed: item.confirmed,
-          confirmedInc: item.confirmed - prev.confirmed,
+          confirmedInc: inc >= 0 ? inc : 0,
         })
         return res
       }, history.slice(0, 1))
       .slice(1)
-    this.maxConfirmed = max(this.history.map((item) => item.confirmed))
+  }
+
+  calculateMax() {
+    this.maxCount = max(this.history.map((item) => item[`confirmed${this.suffix}`]))
   }
 
   updateScales() {
     this.countScale = scaleLinear()
-      .domain([0, this.maxConfirmed])
+      .domain([0, this.maxCount])
       .range([this.height - this.marginBottom, this.marginTop])
     this.timeScale = scaleBand()
       .domain(this.history.map((item) => item.date))
@@ -163,8 +172,8 @@ export default class RegionChart extends BaseChart {
       )
       .transition(transition)
       .call(this._updateBars.bind(this))
-      .attr('y', (item) => this.countScale(item.confirmed))
-      .attr('height', (item) => this.countScale(0) - this.countScale(item.confirmed))
+      .attr('y', (item) => this.countScale(item[`confirmed${this.suffix}`]))
+      .attr('height', (item) => this.countScale(0) - this.countScale(item[`confirmed${this.suffix}`]))
   }
 
   _enterOvers(enter) {
@@ -177,7 +186,7 @@ export default class RegionChart extends BaseChart {
         const history = me.getHistory()
         me.tooltip.show({
           data: {
-            cases: data.confirmed,
+            cases: data[`confirmed${me.suffix}`],
             recover: null,
             deaths: null,
           },
@@ -212,6 +221,17 @@ export default class RegionChart extends BaseChart {
   onResize() {
     super.onResize()
 
+    this.updateScales()
+    this.updateAxes()
+    this.updateBars()
+  }
+
+  setType(type) {
+    this.suffix = type === 'full'
+      ? ''
+      : 'Inc'
+
+    this.calculateMax()
     this.updateScales()
     this.updateAxes()
     this.updateBars()

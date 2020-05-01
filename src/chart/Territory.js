@@ -60,6 +60,16 @@ export class Territory extends BaseChart {
       })
   }
 
+  afterLoad() {
+    this.initEuropeDataset()
+    this.setType(this.type)
+    setTimeout(() => {
+      this.progress.remove()
+    }, 1000)
+    select('#territory-chart-box')
+      .classed('hide-controls', false)
+  }
+
   initGradients() {
     const interpolations = this.interpolations
     this.svg.append('defs')
@@ -106,11 +116,7 @@ export class Territory extends BaseChart {
     if (index >= this.mapParts) {
       this.progress.select('.progress-bar')
         .style('width', '100%')
-      this.initEuropeDataset()
-      this.setType(this.type)
-      setTimeout(() => {
-        this.progress.remove()
-      }, 1000)
+      this.afterLoad()
       return
     }
     const width = this.mapParts !== 1

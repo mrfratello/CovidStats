@@ -28,3 +28,13 @@ selectAll('.setViewBtn')
       territoryChart.setEuropeProjection()
     }
   })
+
+selectAll('.regionTypeBtn')
+  .on('click', function() {
+    const type = this.dataset.value
+    selectAll('.regionTypeBtn')
+      .each(function() {
+        select(this).classed('active', this.dataset.value === type)
+      })
+    regionChart.setType(type)
+  })
