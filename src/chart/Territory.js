@@ -6,8 +6,7 @@ import { scaleDiverging, scaleLinear } from 'd3-scale'
 import { axisBottom } from 'd3-axis'
 import {
   geoPath,
-  geoConicEqualArea,
-  geoEquirectangular,
+  geoMercator,
 } from 'd3-geo'
 import {
   interpolateOranges,
@@ -32,6 +31,7 @@ export class Territory extends BaseChart {
   mapParts = 1
   VERSION = 'v1.1'
 
+  view = 'full'
   type = 'confirmed'
   dataset = {
     type: 'FeatureCollection',
@@ -47,6 +47,7 @@ export class Territory extends BaseChart {
     super(selector)
     this.updateSizes()
     this.initGradients()
+    this.initPath()
 
     this.progress = this.container.select('.load-progress')
 
@@ -104,6 +105,7 @@ export class Territory extends BaseChart {
     if (index >= this.mapParts) {
       this.progress.select('.progress-bar')
         .style('width', '100%')
+      this.initEuropeDataset()
       this.setType(this.type)
       setTimeout(() => {
         this.progress.remove()
@@ -142,14 +144,50 @@ export class Territory extends BaseChart {
     })
   }
 
-  updatePath() {
-    const projection = geoConicEqualArea()
-      .parallels([100, 50])
-      .rotate([-100, 0])
-      // .rotate([-100, -45])
-      .fitSize([this.innerWidth, this.innerHeight], this.dataset)
+  initEuropeDataset() {
+    this.europeDataset = {
+      type: 'FeatureCollection',
+      features: this.dataset.features
+        .filter((item) => (
+          [
+            'Калининградская область',
+            'Карелия',
+            'Дагестан',
+            'Свердловская область',
+          ].includes(item.properties.name)
+        ))
+    }
+  }
+
+  initPath() {
+    this.projection = geoMercator()
+      .rotate([-100, -60, 5])
     this.geoPath = geoPath()
-      .projection(projection)
+      .projection(this.projection)
+  }
+
+  updatePathBySize() {
+    const dataset = this.view === 'full'
+      ? this.dataset
+      : this.europeDataset
+    this.projection
+      .fitSize([this.innerWidth, this.innerHeight], dataset)
+  }
+
+  setFullProjection() {
+    this.view = 'full'
+    this.projection
+      .rotate([-100, -60, 5])
+      .fitSize([this.innerWidth, this.innerHeight], this.dataset)
+    this.resizeRegions()
+  }
+
+  setEuropeProjection() {
+    this.view = 'europe'
+    this.projection
+      .rotate([-80, -60, 0])
+      .fitSize([this.innerWidth, this.innerHeight], this.europeDataset)
+    this.resizeRegions()
   }
 
   render() {
@@ -213,12 +251,17 @@ export class Territory extends BaseChart {
   }
 
   updateRegions() {
-    this.updatePath()
+    this.updatePathBySize()
     this.map.selectAll('path.region')
       .data(this.dataset.features, (d) => d.properties.name)
       .join(
         (enter) => this._enterRegion(enter),
       )
+      .attr('d', this.geoPath)
+  }
+
+  resizeRegions() {
+    this.map.selectAll('path.region')
       .attr('d', this.geoPath)
   }
 
@@ -262,9 +305,9 @@ export class Territory extends BaseChart {
   onResize() {
     super.onResize()
 
-    this.updatePath()
+    this.updatePathBySize()
     this.updateAxes()
-    this.updateRegions()
+    this.resizeRegions()
   }
 
   setType(type) {

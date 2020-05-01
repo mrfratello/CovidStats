@@ -79,6 +79,8 @@ $deaths-color: #ff6666;
 .territory-chart {
   $territory-stroke-color: #4693c8;
   position: relative;
+  min-height: 300px;
+  flex-grow: 1;
 
   svg {
     position: absolute;
@@ -111,6 +113,10 @@ $deaths-color: #ff6666;
 }
 
 .map-tooltip {
+  $line: 1.5rem;
+  height: 2 * $line;
+  line-height: $line;
+
   .cases {
     color: $cases-color;
   }

@@ -15,3 +15,14 @@ selectAll('.showTypeBtn')
       })
     territoryChart.setType(type)
   })
+
+selectAll('.setViewBtn')
+  .on('click', function() {
+    const view = this.dataset.value
+    if (view === 'full') {
+      territoryChart.setFullProjection()
+    }
+    if (view === 'europe') {
+      territoryChart.setEuropeProjection()
+    }
+  })

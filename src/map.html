@@ -20,8 +20,8 @@
   </nav>
   <div class="container d-flex flex-column screen screen_top content">
     <h1>Карта заражения инфекцией Covid-19 в России</h1>
-    <div class="text-center">
-      <div class="btn-group btn-group-sm form-btn-group" role="group">
+    <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-center">
+      <div class="btn-group btn-group-sm mb-1" role="group">
         <button
           type="button"
           class="showTypeBtn btn btn-info active"
@@ -50,6 +50,23 @@
           >
           Плотность заражения
         </button> -->
+      </div>
+
+      <div class="mb-1">
+        <button
+          type="button"
+          class="setViewBtn btn btn-sm btn-primary"
+          data-value="full"
+          >
+          Вся страна
+        </button>
+        <button
+          type="button"
+          class="setViewBtn btn btn-sm btn-primary"
+          data-value="europe"
+          >
+          Европейская часть
+        </button>
       </div>
     </div>
     <div id="territory-chart" class="chart territory-chart">
