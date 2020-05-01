@@ -26,7 +26,6 @@ export default class Chart extends BaseChart {
 
   constructor(selector) {
     super(selector)
-    this.svg.attr('id', 'simple')
 
     dataset.getAll()
       .then(({ data, updateDate }) => {
@@ -178,7 +177,6 @@ export default class Chart extends BaseChart {
 
   render(data) {
     this.dataset = data
-    this.tooltip.setDataset(data)
 
     this.initExtremums(data)
     this.initScales(data)

@@ -43,12 +43,13 @@ export class Territory extends BaseChart {
     deaths: interpolateReds,
   }
 
-  constructor(selector) {
+  constructor(selector, regionChart) {
     super(selector)
     this.updateSizes()
     this.initGradients()
     this.initPath()
 
+    this.regionChart = regionChart
     this.progress = this.container.select('.load-progress')
 
     dataset.getAll()
@@ -288,8 +289,8 @@ export class Territory extends BaseChart {
           <span class="deaths">${deaths}</span>&nbsp;
         `)
       })
-      .on('mouseout', () => {
-        tooltip.html('&nbsp;')
+      .on('click', function({ stat }) {
+        me.regionChart.setDataset(stat)
       })
   }
 

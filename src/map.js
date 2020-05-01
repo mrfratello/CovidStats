@@ -2,9 +2,11 @@ import { selectAll, select } from 'd3-selection'
 import './format'
 import './ui/navbar'
 import TerritoryChart from './chart/Territory'
+import RegionChart from './chart/Region'
 import './style/main.scss'
 
-const territoryChart = new TerritoryChart('territory-chart')
+const regionChart = new RegionChart('region-chart')
+const territoryChart = new TerritoryChart('territory-chart', regionChart)
 
 selectAll('.showTypeBtn')
   .on('click', function() {

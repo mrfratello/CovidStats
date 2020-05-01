@@ -45,8 +45,10 @@ $btn-focus-width: 0;
 
 
 #chart,
-#period-offset-chart {
+#period-offset-chart,
+#region-chart {
   min-height: 250px;
+  max-height: 350px;
   flex-grow: 1;
 }
 

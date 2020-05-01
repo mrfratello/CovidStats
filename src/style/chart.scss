@@ -116,7 +116,10 @@ $deaths-color: #ff6666;
   $line: 1.5rem;
   height: 2 * $line;
   line-height: $line;
+}
 
+.map-tooltip,
+.region-description {
   .cases {
     color: $cases-color;
   }
