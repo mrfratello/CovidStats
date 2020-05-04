@@ -295,9 +295,9 @@ export class PeriodOffset extends BaseChart {
     return enter.append('rect')
       .classed('caseBar', true)
       .attr('x', ({ date }) => this.timeScale(shortDate(date)))
-      .attr('y', () => this.countScale.range()[0])
+      .attr('y', this.countScale.range()[0])
       .attr('width', this.timeScale.bandwidth() / 2)
-      .attr('height', () => 0)
+      .attr('height', 0)
   }
 
   onResize() {
