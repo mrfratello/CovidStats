@@ -5,14 +5,14 @@ import { axisRight , axisBottom } from 'd3-axis'
 import { shortDate } from '../format/date'
 import dataset from '../Dataset'
 import transition from '../transition'
-import { DYNAMIC_TYPE } from '../constants'
+import { DYNAMIC_TYPE, TOTAL_TYPE } from '../constants'
 import BaseChart from './Base'
 
 export class PeriodOffset extends BaseChart {
   marginBottom = 80
-  offsetDays = 13
+  offsetDays = 20
   maxTickWidth = 35
-  type = DYNAMIC_TYPE
+  type = TOTAL_TYPE
 
   constructor(selector) {
     super(selector)
@@ -73,7 +73,7 @@ export class PeriodOffset extends BaseChart {
       this.dataset.flatMap(
         (item) => [item.casesDay, item.sumDay],
       ),
-    )
+    ) * 1.05
     this.countScale.domain([0, this.maxCount])
     this.timeScale
       .domain(this.dataset.map((item) => shortDate(item.date)))
@@ -324,7 +324,6 @@ export class PeriodOffset extends BaseChart {
     this.offsetDays = offset
     this.onUpdateOptions()
   }
-
 
   onZoom() {
     const range = [this.marginLeft, this.width - this.marginRight]

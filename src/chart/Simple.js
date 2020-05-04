@@ -1,5 +1,5 @@
 import { max } from 'd3-array'
-import { select } from 'd3-selection'
+import { select, event } from 'd3-selection'
 import { scaleBand, scaleLinear, scalePow } from 'd3-scale'
 import { axisRight, axisBottom } from 'd3-axis'
 import { shortDate } from '../format/date'
@@ -7,13 +7,13 @@ import dataset from '../Dataset'
 import BaseChart from './Base'
 import transition from '../transition'
 import {
-  ALL_TYPE,
+  PERIOD_TYPE,
   ALL_SICKS_TYPE,
   valueByType,
 } from '../constants'
 
 export default class Chart extends BaseChart {
-  type = ALL_TYPE
+  type = PERIOD_TYPE
   scaleType = 'linear'
   maxTickWidth = 35
 
@@ -53,7 +53,7 @@ export default class Chart extends BaseChart {
       this.dataset.flatMap(
         (item) => [item.cases, item.deaths, item.recover],
       ),
-    )
+    ) * 1.05
   }
 
   initScales() {
@@ -132,6 +132,7 @@ export default class Chart extends BaseChart {
 
   renderBars() {
     this.overBars = this.svg.append('g')
+      .attr('clip-path', `url(#clip-${this.id})`)
 
     this.overBars.selectAll('.overBar')
       .data(this.dataset, ({ shortDate }) => shortDate)
@@ -142,6 +143,7 @@ export default class Chart extends BaseChart {
 
     this.cases = this.svg.append('g')
       .classed('cases', true)
+      .attr('clip-path', `url(#clip-${this.id})`)
     this.cases.selectAll('.caseBar')
       .data(this.dataset, ({ shortDate }) => shortDate)
       .enter()
@@ -151,6 +153,7 @@ export default class Chart extends BaseChart {
 
     this.recover = this.svg.append('g')
       .classed('recover', true)
+      .attr('clip-path', `url(#clip-${this.id})`)
     this.recover.selectAll('.recoverBar')
       .data(this.dataset, ({ shortDate }) => shortDate)
       .enter()
@@ -160,6 +163,7 @@ export default class Chart extends BaseChart {
 
     this.deaths = this.svg.append('g')
       .classed('deaths', true)
+      .attr('clip-path', `url(#clip-${this.id})`)
     this.deaths.selectAll('.deathsBar')
       .data(this.dataset, ({ shortDate }) => shortDate)
       .enter()
@@ -170,18 +174,30 @@ export default class Chart extends BaseChart {
 
   updateBars() {
     this.overBars.selectAll('.overBar')
-      .data(this.dataset, ({ date }) => date)
+      .data(this.dataset, ({ shortDate }) => shortDate)
       .call(this._updateOvers.bind(this))
 
     this.cases.selectAll('.caseBar')
-      .data(this.dataset, ({ date }) => date)
+      .data(this.dataset, ({ shortDate }) => shortDate)
       .call(this._updateCountBars.bind(this), 'cases')
     this.recover.selectAll('.recoverBar')
-      .data(this.dataset, ({ date }) => date)
+      .data(this.dataset, ({ shortDate }) => shortDate)
       .call(this._updateCountBars.bind(this), 'recover')
     this.deaths.selectAll('.deathsBar')
-      .data(this.dataset, ({ date }) => date)
+      .data(this.dataset, ({ shortDate }) => shortDate)
       .call(this._updateCountBars.bind(this), 'deaths')
+  }
+
+  zoomBars() {
+    this.overBars.selectAll('.overBar')
+      .call(this._zoomBars.bind(this))
+
+    this.cases.selectAll('.caseBar')
+      .call(this._zoomBars.bind(this))
+    this.recover.selectAll('.recoverBar')
+      .call(this._zoomBars.bind(this))
+    this.deaths.selectAll('.deathsBar')
+      .call(this._zoomBars.bind(this))
   }
 
   _enterOvers(enter) {
@@ -238,6 +254,12 @@ export default class Chart extends BaseChart {
       .attr('height', (item) => this.countScale(0) - this.countScale(item[property]))
   }
 
+  _zoomBars(update) {
+    return update
+      .attr('x', ({ shortDate }) => this.timeScale(shortDate))
+      .attr('width', this.timeScale.bandwidth())
+  }
+
   onUpdateOptions() {
     this.updateDomains()
     this.updateAxes()
@@ -262,5 +284,14 @@ export default class Chart extends BaseChart {
     this.updateRanges()
     this.updateAxes()
     this.updateBars()
+  }
+
+  onZoom() {
+    const range = [this.marginLeft, this.width - this.marginRight]
+      .map((d) => event.transform.applyX(d))
+    this.timeScale.range(range)
+    this.timeAxisBox.call(this.timeAxis)
+
+    this.zoomBars()
   }
 }

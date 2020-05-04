@@ -60,6 +60,12 @@ $btn-focus-width: 0;
 
 .chart {
   position: relative;
+
+  svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
 }
 .loading {
   position: absolute;

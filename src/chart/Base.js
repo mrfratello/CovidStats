@@ -57,7 +57,7 @@ export default class Base {
       [this.width - this.marginRight, this.height - this.marginBottom],
     ]
     this.zoom = zoom()
-      .scaleExtent([1, 6])
+      .scaleExtent([1, 5])
       .translateExtent(extent)
       .extent(extent)
       .on(`zoom.${this.id}`, function() {

@@ -83,9 +83,6 @@ $deaths-color: #ff6666;
   flex-grow: 1;
 
   svg {
-    position: absolute;
-    top: 0;
-    left: 0;
     background: lighten($territory-stroke-color, 30%);
   }
 
