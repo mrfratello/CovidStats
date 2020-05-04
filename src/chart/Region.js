@@ -1,5 +1,5 @@
 import { max } from 'd3-array'
-import { select } from 'd3-selection'
+import { select, event } from 'd3-selection'
 import { scaleBand, scaleLinear } from 'd3-scale'
 import { axisRight, axisBottom } from 'd3-axis'
 import { format } from 'd3-format'
@@ -13,11 +13,14 @@ export default class RegionChart extends BaseChart {
   marginTop = 18
   maxTickWidth = 35
   history = []
-  suffix = ''
+  suffix = 'Inc'
+  _didSet = false
 
   constructor(selector) {
     super(selector)
     this.updateSizes()
+    this.zoom.on(`zoom.${this.id}`, null)
+    this.initScales()
     this.box = select('#region-chart-box')
     this.title = this.box.select('.region-title')
     this.description = this.box.select('.region-description')
@@ -73,9 +76,11 @@ export default class RegionChart extends BaseChart {
 
   renderBars() {
     this.overBars = this.svg.append('g')
+      .attr('clip-path', `url(#clip-${this.id})`)
 
     this.confirmedBars = this.svg.append('g')
       .classed('cases', true)
+      .attr('clip-path', `url(#clip-${this.id})`)
   }
 
   setDataset(data) {
@@ -83,11 +88,18 @@ export default class RegionChart extends BaseChart {
     this.scrollToChart()
     this.prepareDataset(data.history)
     this.calculateMax()
-    this.updateScales()
+    this.updateDomains()
     setTimeout(() => {
       this.updateAxes()
       this.updateBars()
-      this.box.classed('hide-controls', false)
+      if (!this._didSet) {
+        this.box.classed('hide-controls', false)
+        this.zoom.on(`zoom.${this.id}`, () => {
+          this.onZoom()
+        })
+        this.resetZoom()
+        this._didSet = true
+      }
     }, 500)
   }
 
@@ -137,14 +149,23 @@ export default class RegionChart extends BaseChart {
     this.maxCount = max(this.history.map((item) => item[`confirmed${this.suffix}`]))
   }
 
-  updateScales() {
+  initScales() {
     this.countScale = scaleLinear()
-      .domain([0, this.maxCount])
       .range([this.height - this.marginBottom, this.marginTop])
     this.timeScale = scaleBand()
-      .domain(this.history.map((item) => item.date))
-      .range([this.marginLeft, this.width - this.marginRight])
       .padding(0.1)
+      .range([this.marginLeft, this.width - this.marginRight])
+  }
+
+  updateDomains() {
+    this.countScale.domain([0, this.maxCount])
+    this.timeScale.domain(this.history.map((item) => item.date))
+  }
+  updateRanges() {
+    this.countScale
+      .range([this.height - this.marginBottom, this.marginTop])
+    this.timeScale
+      .range([this.marginLeft, this.width - this.marginRight])
   }
 
   updateBars() {
@@ -174,6 +195,14 @@ export default class RegionChart extends BaseChart {
       .call(this._updateBars.bind(this))
       .attr('y', (item) => this.countScale(item[`confirmed${this.suffix}`]))
       .attr('height', (item) => this.countScale(0) - this.countScale(item[`confirmed${this.suffix}`]))
+  }
+
+  zoomBars() {
+    this.overBars.selectAll('.overBar')
+      .call(this._updateBars.bind(this))
+
+    this.confirmedBars.selectAll('.caseBar')
+      .call(this._updateBars.bind(this))
   }
 
   _enterOvers(enter) {
@@ -221,7 +250,7 @@ export default class RegionChart extends BaseChart {
   onResize() {
     super.onResize()
 
-    this.updateScales()
+    this.updateRanges()
     this.updateAxes()
     this.updateBars()
   }
@@ -232,8 +261,17 @@ export default class RegionChart extends BaseChart {
       : 'Inc'
 
     this.calculateMax()
-    this.updateScales()
+    this.updateDomains()
     this.updateAxes()
     this.updateBars()
+  }
+
+  onZoom() {
+    const range = [this.marginLeft, this.width - this.marginRight]
+      .map((d) => event.transform.applyX(d))
+    this.timeScale.range(range)
+    this.timeAxisBox.call(this.timeAxis)
+
+    this.zoomBars()
   }
 }

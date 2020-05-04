@@ -127,3 +127,7 @@ $deaths-color: #ff6666;
     color: $deaths-color;
   }
 }
+
+.hide-controls #region-chart svg {
+  background-color: #f1f1f1;
+}
