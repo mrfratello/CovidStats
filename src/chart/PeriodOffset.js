@@ -18,6 +18,7 @@ export class PeriodOffset extends BaseChart {
     super(selector)
     this.updateSizes()
     this.updateZoom()
+    this.initScales()
 
     dataset.getAll()
       .then(({ data, updateDate }) => {
@@ -29,7 +30,7 @@ export class PeriodOffset extends BaseChart {
   render(data) {
     this.pureDataset = data
     this.prepareDataset()
-    this.updateScales()
+    this.updateDomains()
     this.renderBars()
     this.renderAxes()
     this.updateBars()
@@ -57,23 +58,36 @@ export class PeriodOffset extends BaseChart {
       }))
   }
 
-  updateScales() {
+  initScales() {
+    this.countScale = scaleLinear()
+      .range([this.height - this.marginBottom, this.marginTop])
+
+    this.timeScale = scaleBand()
+      .range([this.marginLeft, this.width - this.marginRight])
+      .padding(0.1)
+    this.timeOffsetScale = this.timeScale.copy()
+  }
+
+  updateDomains() {
     this.maxCount = max(
       this.dataset.flatMap(
         (item) => [item.casesDay, item.sumDay],
       ),
     )
-    this.countScale = scaleLinear()
-      .domain([0, this.maxCount])
-      .range([this.height - this.marginBottom, this.marginTop])
-
-    this.timeScale = scaleBand()
+    this.countScale.domain([0, this.maxCount])
+    this.timeScale
       .domain(this.dataset.map((item) => shortDate(item.date)))
-      .range([this.marginLeft, this.width - this.marginRight])
-      .padding(0.1)
-    this.timeOffsetScale = this.timeScale
-      .copy()
+    this.timeOffsetScale
       .domain(this.dataset.map((item) => shortDate(item.dateOffset)))
+  }
+
+  updateRanges() {
+    this.countScale
+      .range([this.height - this.marginBottom, this.marginTop])
+    this.timeScale
+      .range([this.marginLeft, this.width - this.marginRight])
+    this.timeOffsetScale
+      .range([this.marginLeft, this.width - this.marginRight])
   }
 
   renderAxes() {
@@ -289,17 +303,16 @@ export class PeriodOffset extends BaseChart {
   onResize() {
     super.onResize()
 
-    this.updateScales()
+    this.updateRanges()
     this.updateAxes()
     this.updateBars()
   }
 
   onUpdateOptions() {
     this.prepareDataset()
-    this.updateScales()
+    this.updateDomains()
     this.updateAxes()
     this.updateBars()
-    this.resetZoom()
   }
 
   onUpdateType(type) {
