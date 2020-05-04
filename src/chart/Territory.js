@@ -72,7 +72,7 @@ export class Territory extends BaseChart {
 
   initGradients() {
     const interpolations = this.interpolations
-    this.svg.append('defs')
+    this.defs
       .selectAll('linearGradient')
       .data(['confirmed', 'recovered', 'deaths'])
       .enter()

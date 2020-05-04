@@ -1,11 +1,11 @@
-import { select } from 'd3-selection'
+import { select, event } from 'd3-selection'
 import { max } from 'd3-array'
 import { scaleBand, scaleLinear } from 'd3-scale'
 import { axisRight , axisBottom } from 'd3-axis'
 import { shortDate } from '../format/date'
 import dataset from '../Dataset'
 import transition from '../transition'
-import { DYNAMIC_TYPE, TOTAL_TYPE } from '../constants'
+import { DYNAMIC_TYPE } from '../constants'
 import BaseChart from './Base'
 
 export class PeriodOffset extends BaseChart {
@@ -17,6 +17,7 @@ export class PeriodOffset extends BaseChart {
   constructor(selector) {
     super(selector)
     this.updateSizes()
+    this.updateZoom()
 
     dataset.getAll()
       .then(({ data, updateDate }) => {
@@ -140,6 +141,7 @@ export class PeriodOffset extends BaseChart {
     const bandWidth = this.timeScale.bandwidth() / 2
 
     this.overBars = this.svg.append('g')
+      .attr('clip-path', `url(#clip-${this.id})`)
     this.overBars.selectAll('.overBar')
       .data(this.dataset, ({ date }) => date)
       .join(
@@ -148,6 +150,7 @@ export class PeriodOffset extends BaseChart {
 
     this.cases = this.svg.append('g')
       .classed('cases', true)
+      .attr('clip-path', `url(#clip-${this.id})`)
     this.cases.selectAll('.caseBar')
       .data(this.dataset, ({ dateOffset }) => dateOffset)
       .join(
@@ -156,6 +159,7 @@ export class PeriodOffset extends BaseChart {
 
     this.recover = this.svg.append('g')
       .classed('recover', true)
+      .attr('clip-path', `url(#clip-${this.id})`)
     this.recover.selectAll('.recoverBar')
       .data(this.dataset, ({ date }) => date)
       .enter()
@@ -168,6 +172,7 @@ export class PeriodOffset extends BaseChart {
 
     this.deaths = this.svg.append('g')
       .classed('deaths', true)
+      .attr('clip-path', `url(#clip-${this.id})`)
     this.deaths.selectAll('.deathsBar')
       .data(this.dataset, ({ date }) => date)
       .enter()
@@ -190,8 +195,8 @@ export class PeriodOffset extends BaseChart {
         (exit) => exit.remove(),
       )
       .attr('x', ({ date }) => this.timeScale(shortDate(date)))
-      .attr('y', () => this.countScale.range()[1])
       .attr('width', this.timeScale.bandwidth())
+      .attr('y', () => this.countScale.range()[1])
       .attr('height', () => this.innerHeight)
 
     this.cases.selectAll('.caseBar')
@@ -223,6 +228,23 @@ export class PeriodOffset extends BaseChart {
       .attr('width', bandWidth)
       .attr('y', (item) => this.countScale(item.sumDay))
       .attr('height', (item) => this.countScale(item.recoverDay) - this.countScale(item.sumDay))
+  }
+
+  zoomBars() {
+    const bandWidth = this.timeScale.bandwidth() / 2
+
+    this.overBars.selectAll('.overBar')
+      .attr('x', ({ date }) => this.timeScale(shortDate(date)))
+      .attr('width', this.timeScale.bandwidth())
+    this.cases.selectAll('.caseBar')
+      .attr('x', ({ date }) => this.timeScale(shortDate(date)) + bandWidth)
+      .attr('width', bandWidth)
+    this.recover.selectAll('.recoverBar')
+      .attr('x', ({ date }) => this.timeScale(shortDate(date)))
+      .attr('width', bandWidth)
+    this.deaths.selectAll('.deathsBar')
+      .attr('x', ({ date }) => this.timeScale(shortDate(date)))
+      .attr('width', bandWidth)
   }
 
   _enterOvers(enter) {
@@ -277,6 +299,7 @@ export class PeriodOffset extends BaseChart {
     this.updateScales()
     this.updateAxes()
     this.updateBars()
+    this.resetZoom()
   }
 
   onUpdateType(type) {
@@ -287,6 +310,18 @@ export class PeriodOffset extends BaseChart {
   onUpdateOffset(offset) {
     this.offsetDays = offset
     this.onUpdateOptions()
+  }
+
+
+  onZoom() {
+    const range = [this.marginLeft, this.width - this.marginRight]
+      .map((d) => event.transform.applyX(d))
+    this.timeScale.range(range)
+    this.timeOffsetScale.range(range)
+    this.timeAxisBox.call(this.timeAxis)
+    this.timeOffsetAxisBox.call(this.timeOffsetAxis)
+
+    this.zoomBars()
   }
 }
 
