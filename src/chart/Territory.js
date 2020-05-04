@@ -1,7 +1,7 @@
 import axios from 'axios'
 import isMobile from 'ismobilejs'
 import { max, mean } from 'd3-array'
-import { select } from 'd3-selection'
+import { select, event } from 'd3-selection'
 import { scaleDiverging, scaleLinear } from 'd3-scale'
 import { axisBottom } from 'd3-axis'
 import {
@@ -22,11 +22,12 @@ const int = format(',d')
 const signInt = format('+,d')
 
 export class Territory extends BaseChart {
-  marginLeft = 30
-  marginRight = 30
+  marginLeft = 0
+  marginRight = 0
   marginBottom = 40
-  marginTop = 30
+  marginTop = 0
   meanRatio = .5
+  axesPadding = 30
 
   mapParts = 1
   VERSION = 'v1.1'
@@ -46,8 +47,10 @@ export class Territory extends BaseChart {
   constructor(selector, regionChart) {
     super(selector)
     this.updateSizes()
+    this.updateClipPath()
     this.initGradients()
     this.initPath()
+    this.updateZoom()
 
     this.regionChart = regionChart
     this.progress = this.container.select('.load-progress')
@@ -58,6 +61,32 @@ export class Territory extends BaseChart {
         this.render()
         this.getRegions()
       })
+  }
+
+  updateClipPath() {
+    this.clipPath
+      .attr('x', this.marginLeft)
+      .attr('width', this.innerWidth)
+      .attr('y', this.marginTop)
+      .attr('height', this.innerHeight)
+  }
+
+  updateZoom() {
+    const extent = [
+      [0, 0],
+      [
+        this.innerWidth,
+        this.innerHeight,
+      ],
+    ]
+    this.zoom
+      .translateExtent(extent)
+      .extent(extent)
+  }
+
+  resetZoom() {
+    super.resetZoom()
+    this.map.attr('transform', '')
   }
 
   afterLoad() {
@@ -178,14 +207,21 @@ export class Territory extends BaseChart {
       ? this.dataset
       : this.europeDataset
     this.projection
-      .fitSize([this.innerWidth, this.innerHeight], dataset)
+      .fitSize(
+        [this.innerWidth - 2 * this.axesPadding, this.innerHeight - 2 * this.axesPadding],
+        dataset,
+      )
   }
 
   setFullProjection() {
     this.view = 'full'
     this.projection
       .rotate([-100, -60, 5])
-      .fitSize([this.innerWidth, this.innerHeight], this.dataset)
+      .fitSize(
+        [this.innerWidth - 2 * this.axesPadding, this.innerHeight - 2 * this.axesPadding],
+        this.dataset,
+      )
+    this.resetZoom()
     this.resizeRegions()
   }
 
@@ -193,7 +229,11 @@ export class Territory extends BaseChart {
     this.view = 'europe'
     this.projection
       .rotate([-80, -60, 0])
-      .fitSize([this.innerWidth, this.innerHeight], this.europeDataset)
+      .fitSize(
+        [this.innerWidth - 2 * this.axesPadding, this.innerHeight - 2 * this.axesPadding],
+        this.europeDataset,
+      )
+    this.resetZoom()
     this.resizeRegions()
   }
 
@@ -201,8 +241,12 @@ export class Territory extends BaseChart {
     this.renderAxes()
 
     this.map = this.svg.append('g')
-      .classed('map', true)
-      .attr('transform', `translate(${this.marginLeft}, ${this.marginTop})`)
+      .attr('clip-path', `url(#clip-${this.id})`)
+        .append('g')
+        .attr('transform', `translate(${this.marginLeft + this.axesPadding}, ${this.marginTop + this.axesPadding})`)
+          .append('g')
+          .classed('map', true)
+          .attr('stroke-width', .5);
   }
 
   renderAxes() {
@@ -210,17 +254,18 @@ export class Territory extends BaseChart {
     this.chromaticRightAxisBox = this.svg.append('g')
     this.chromaticColor = this.svg.append('rect')
       .attr('height', 10)
-      .attr('x', this.marginLeft)
+      .attr('x', this.marginLeft + this.axesPadding)
       .attr('y', this.height)
       .attr('fill', 'grey')
   }
 
   updateAxes() {
     const yPosition = this.height - this.marginBottom + 15
+    const width = this.innerWidth - 2 * this.axesPadding
     const sizes = [
-      this.marginLeft,
-      this.marginLeft + this.innerWidth * this.meanRatio,
-      this.width - this.marginRight - .5,
+      this.marginLeft + this.axesPadding,
+      this.marginLeft + this.axesPadding + width * this.meanRatio,
+      this.width - this.marginRight - this.axesPadding - .5,
     ]
     const domain = this.scale.domain()
     const scaleLeft = scaleLinear()
@@ -253,7 +298,7 @@ export class Territory extends BaseChart {
     this.chromaticColor
       .transition(transition)
       .attr('y', yPosition - 10)
-      .attr('width', this.innerWidth)
+      .attr('width', width)
       .attr('fill', `url(#${this.type}Gradient)`)
   }
 
@@ -311,6 +356,7 @@ export class Territory extends BaseChart {
 
   onResize() {
     super.onResize()
+    this.updateClipPath()
 
     this.updatePathBySize()
     this.updateAxes()
@@ -324,6 +370,12 @@ export class Territory extends BaseChart {
     this.map.selectAll('path.region')
       .transition(transition)
       .attr('fill', ({ stat }) => this.getColor(stat[this.type]))
+  }
+
+  onZoom() {
+    this.map
+      .attr('transform', event.transform)
+      .attr('stroke-width', .5 / event.transform.k);
   }
 }
 
