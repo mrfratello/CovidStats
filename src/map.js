@@ -3,10 +3,17 @@ import './format'
 import './ui/navbar'
 import TerritoryChart from './chart/Territory'
 import RegionChart from './chart/Region'
+import MapTimelapse from './timelapse/Map'
 import './style/main.scss'
 
 const regionChart = new RegionChart('region-chart')
 const territoryChart = new TerritoryChart('territory-chart', regionChart)
+
+new MapTimelapse(
+  document.getElementById('confirmed-timelapse'),
+  territoryChart,
+  selectAll('.showTypeBtn')
+)
 
 selectAll('.showTypeBtn')
   .on('click', function() {

@@ -23,6 +23,10 @@ export default class Base {
     }, 400)
 
     select(window).on(`resize.${id}`, () => { onResize() })
+    if (ResizeObserver) {
+      const resizer = new ResizeObserver(() => { onResize() })
+      resizer.observe(this.container.node())
+    }
     this.tooltip = new Tooltip(this.container)
   }
 
@@ -37,8 +41,7 @@ export default class Base {
     this.svg = this.container
       .append('svg')
       .classed('chart', true)
-      .style('height', this.height)
-      .style('width', this.width)
+      .attr('viewBox', [0, 0, this.width, this.height])
 
     this.defs = this.svg.append('defs')
     this.clipPath = this.defs.append('clipPath')
@@ -95,9 +98,7 @@ export default class Base {
     this.updateSizes()
     this.updateZoom()
     this.resetZoom()
-    this.svg
-      .style('height', this.height)
-      .style('width', this.width)
+    this.svg.attr('viewBox', [0, 0, this.width, this.height])
     this.clipPath
       .attr('width', this.innerWidth)
       .attr('height', this.height)

@@ -130,3 +130,10 @@ $deaths-color: #ff6666;
 .hide-controls #region-chart svg {
   background-color: #f1f1f1;
 }
+
+.timelapse-control {
+  output {
+    font-size: .8rem;
+    flex-basis: 50px;
+  }
+}

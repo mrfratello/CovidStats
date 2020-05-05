@@ -43,15 +43,7 @@
           >
           Умерли
         </button>
-        <!-- <button
-          type="button"
-          class="showTypeBtn btn btn-info"
-          data-value="confirmed_density"
-          >
-          Плотность заражения
-        </button> -->
       </div>
-
       <div class="mb-1">
         <button
           type="button"
@@ -85,6 +77,11 @@
       </div>
     </div>
     <div id="tooltip" class="map-tooltip">&nbsp;</div>
+    <form id="confirmed-timelapse" class="control timelapse-control d-flex align-items-center">
+      <button name=b type=button class="btn btn-sm btn-secondary mr-3"></button>
+      <input name=i type=range min=0 step=1 class="flex-grow-1">
+      <output name=o class="ml-3"></output>
+    </form>
   </div>
   <div class="container screen d-flex flex-column hide-controls" id="region-chart-box">
     <h2>График зараженных по региону <em class="region-title"></em></h2>

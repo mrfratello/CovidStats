@@ -16,6 +16,7 @@ import {
 import { format } from 'd3-format'
 import transition from '../transition'
 import dataset from '../Dataset'
+import { serverDate } from '../format/date'
 import BaseChart from './Base'
 
 const int = format(',d')
@@ -43,6 +44,7 @@ export class Territory extends BaseChart {
     recovered: interpolateGreens,
     deaths: interpolateReds,
   }
+  _loaded = false
 
   constructor(selector, regionChart) {
     super(selector)
@@ -90,6 +92,7 @@ export class Territory extends BaseChart {
   }
 
   afterLoad() {
+    this._loaded = true
     this.initEuropeDataset()
     this.setType(this.type)
     setTimeout(() => {
@@ -121,6 +124,10 @@ export class Territory extends BaseChart {
     return this.interpolations[this.type](
       this.scale(value)
     )
+  }
+
+  getCofirmedColor(value) {
+    return this.interpolations.confirmed(this.scaleDict.confirmed(value))
   }
 
   setStatData(byRegions) {
@@ -260,6 +267,9 @@ export class Territory extends BaseChart {
   }
 
   updateAxes() {
+    if (!this._loaded) {
+      return
+    }
     const yPosition = this.height - this.marginBottom + 15
     const width = this.innerWidth - 2 * this.axesPadding
     const sizes = [
@@ -363,13 +373,27 @@ export class Territory extends BaseChart {
     this.resizeRegions()
   }
 
-  setType(type) {
+  setType(type, silent = false) {
     this.type = type
     this.scale = this.scaleDict[type]
     this.updateAxes()
+    if (!silent) {
+      this.map.selectAll('path.region')
+        .transition(transition)
+        .attr('fill', ({ stat }) => this.getColor(stat[this.type]))
+    }
+  }
+
+  updateConfirmedHistory(dateTime) {
+    if (this.type !== 'confirmed') {
+      this.setType('confirmed', true)
+    }
+    const date = serverDate(dateTime)
+    const none = { confirmed: 0 }
     this.map.selectAll('path.region')
-      .transition(transition)
-      .attr('fill', ({ stat }) => this.getColor(stat[this.type]))
+      .attr('fill', ({ stat }) => this.getColor(
+        (stat.history.find((item) => item.date === date) || none).confirmed
+      ))
   }
 
   onZoom() {
