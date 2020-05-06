@@ -85,7 +85,6 @@ export default class RegionChart extends BaseChart {
 
   setDataset(data) {
     this.renderData(data)
-    this.scrollToChart()
     this.prepareDataset(data.history)
     this.calculateMax()
     this.updateDomains()

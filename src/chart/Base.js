@@ -23,8 +23,8 @@ export default class Base {
     }, 400)
 
     select(window).on(`resize.${id}`, () => { onResize() })
-    if (ResizeObserver) {
-      const resizer = new ResizeObserver(() => { onResize() })
+    if (window.ResizeObserver) {
+      const resizer = new window.ResizeObserver(() => { onResize() })
       resizer.observe(this.container.node())
     }
     this.tooltip = new Tooltip(this.container)

@@ -45,6 +45,7 @@ export class Territory extends BaseChart {
     deaths: interpolateReds,
   }
   _loaded = false
+  _clicked = false
 
   constructor(selector, regionChart) {
     super(selector)
@@ -288,6 +289,7 @@ export class Territory extends BaseChart {
       .call(
         axisBottom()
           .scale(scaleLeft)
+          .ticks(5)
           .tickSizeOuter(0)
       )
 
@@ -352,6 +354,10 @@ export class Territory extends BaseChart {
       })
       .on('click', function({ stat }) {
         me.regionChart.setDataset(stat)
+        if (!me._clicked) {
+          me.regionChart.scrollToChart()
+          me._clicked = true
+        }
       })
   }
 
