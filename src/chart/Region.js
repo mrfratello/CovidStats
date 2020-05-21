@@ -5,7 +5,7 @@ import { axisRight, axisBottom } from 'd3-axis'
 import { format } from 'd3-format'
 import { shortDate, serverShortToDate } from '../format/date'
 import BaseChart from './Base'
-import transition from '../transition'
+import transition, { casesColor } from '../transition'
 
 const int = format(',d')
 
@@ -146,6 +146,7 @@ export default class RegionChart extends BaseChart {
 
   calculateMax() {
     this.maxCount = max(this.history.map((item) => item[`confirmed${this.suffix}`]))
+    this.maxInc = max(this.history, (d) => d.confirmedInc)
   }
 
   initScales() {
@@ -194,6 +195,7 @@ export default class RegionChart extends BaseChart {
       .call(this._updateBars.bind(this))
       .attr('y', (item) => this.countScale(item[`confirmed${this.suffix}`]))
       .attr('height', (item) => this.countScale(0) - this.countScale(item[`confirmed${this.suffix}`]))
+      .style('fill', (item) => casesColor(item.confirmedInc / this.maxInc))
   }
 
   zoomBars() {
@@ -266,11 +268,13 @@ export default class RegionChart extends BaseChart {
   }
 
   onZoom() {
-    const range = [this.marginLeft, this.width - this.marginRight]
-      .map((d) => event.transform.applyX(d))
-    this.timeScale.range(range)
-    this.timeAxisBox.call(this.timeAxis)
+    if (this._didSet) {
+      const range = [this.marginLeft, this.width - this.marginRight]
+        .map((d) => event.transform.applyX(d))
+      this.timeScale.range(range)
+      this.timeAxisBox.call(this.timeAxis)
 
-    this.zoomBars()
+      this.zoomBars()
+    }
   }
 }

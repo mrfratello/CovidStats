@@ -5,8 +5,9 @@ import { axisRight, axisBottom } from 'd3-axis'
 import { shortDate } from '../format/date'
 import dataset from '../Dataset'
 import BaseChart from './Base'
-import transition from '../transition'
+import transition, { casesColor } from '../transition'
 import {
+  ALL_TYPE,
   PERIOD_TYPE,
   ALL_SICKS_TYPE,
   valueByType,
@@ -182,10 +183,10 @@ export default class Chart extends BaseChart {
       .call(this._updateCountBars.bind(this), 'cases')
     this.recover.selectAll('.recoverBar')
       .data(this.dataset, ({ shortDate }) => shortDate)
-      .call(this._updateCountBars.bind(this), 'recover')
+      .call(this._updateCountBars.bind(this), 'recover', .5)
     this.deaths.selectAll('.deathsBar')
       .data(this.dataset, ({ shortDate }) => shortDate)
-      .call(this._updateCountBars.bind(this), 'deaths')
+      .call(this._updateCountBars.bind(this), 'deaths', .5)
   }
 
   zoomBars() {
@@ -195,9 +196,9 @@ export default class Chart extends BaseChart {
     this.cases.selectAll('.caseBar')
       .call(this._zoomBars.bind(this))
     this.recover.selectAll('.recoverBar')
-      .call(this._zoomBars.bind(this))
+      .call(this._zoomBars.bind(this), .5)
     this.deaths.selectAll('.deathsBar')
-      .call(this._zoomBars.bind(this))
+      .call(this._zoomBars.bind(this), .5)
   }
 
   _enterOvers(enter) {
@@ -245,19 +246,30 @@ export default class Chart extends BaseChart {
       .attr('height', 0)
   }
 
-  _updateCountBars(update, property) {
+  _updateCountBars(update, property, widthScale = 1) {
+    const bandWidth = this.timeScale.bandwidth() * widthScale
+    const dx = this.timeScale.bandwidth() - bandWidth
+
     return update
       .transition(transition)
-      .attr('x', ({ shortDate }) => this.timeScale(shortDate))
-      .attr('width', this.timeScale.bandwidth())
+      .attr('x', ({ shortDate }) => this.timeScale(shortDate) + dx)
+      .attr('width', bandWidth)
       .attr('y', (item) => this.countScale(item[property]))
       .attr('height', (item) => this.countScale(0) - this.countScale(item[property]))
+      .style('fill', (item) => (
+        property === 'cases' && this.type !== ALL_TYPE
+          ? casesColor(item.cases / this.maxCount)
+          : null
+      ))
   }
 
-  _zoomBars(update) {
+  _zoomBars(update, widthScale = 1) {
+    const bandWidth = this.timeScale.bandwidth() * widthScale
+    const dx = this.timeScale.bandwidth() - bandWidth
+
     return update
-      .attr('x', ({ shortDate }) => this.timeScale(shortDate))
-      .attr('width', this.timeScale.bandwidth())
+      .attr('x', ({ shortDate }) => this.timeScale(shortDate) + dx)
+      .attr('width', bandWidth)
   }
 
   onUpdateOptions() {
@@ -287,11 +299,13 @@ export default class Chart extends BaseChart {
   }
 
   onZoom() {
-    const range = [this.marginLeft, this.width - this.marginRight]
-      .map((d) => event.transform.applyX(d))
-    this.timeScale.range(range)
-    this.timeAxisBox.call(this.timeAxis)
+    if (this.dataset) {
+      const range = [this.marginLeft, this.width - this.marginRight]
+        .map((d) => event.transform.applyX(d))
+      this.timeScale.range(range)
+      this.timeAxisBox.call(this.timeAxis)
 
-    this.zoomBars()
+      this.zoomBars()
+    }
   }
 }
