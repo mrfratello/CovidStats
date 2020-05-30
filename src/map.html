@@ -6,7 +6,7 @@
   <title>Covid Stats Russia &mdash; Map</title>
 </head>
 <body>
-  <nav class="navbar navbar-expand-md navbar-dark bg-primary">
+  <nav class="navbar navbar-expand-md navbar-dark bg-primary" style="z-index: 10;">
     <a class="navbar-brand" href="/">Covid Stat</a>
     <button class="navbar-toggler" type="button">
       <span class="navbar-toggler-icon"></span>
@@ -18,108 +18,115 @@
       </div>
     </div>
   </nav>
-  <div class="container d-flex flex-column screen screen_top content hide-controls" id="territory-chart-box">
-    <h1>Карта заражения инфекцией Covid-19 в России</h1>
-    <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-center">
-      <div class="control btn-group btn-group-sm mb-1" role="group">
-        <button
-          type="button"
-          class="showTypeBtn btn btn-info active"
-          data-value="confirmed"
-          >
-          Заразились
-        </button>
-        <button
-          type="button"
-          class="showTypeBtn btn btn-info"
-          data-value="recovered"
-          >
-          Вылечились
-        </button>
-        <button
-          type="button"
-          class="showTypeBtn btn btn-info"
-          data-value="deaths"
-          >
-          Умерли
-        </button>
-      </div>
-      <div class="mb-1">
-        <button
-          type="button"
-          class="showTypeBtn btn btn-info btn-sm"
-          data-value="relative"
-          >
-          Заразившихся на 10 000 чел.
-        </button>
-      </div>
-      <div class="mb-1">
-        <button
-          type="button"
-          class="setViewBtn btn btn-sm btn-primary"
-          data-value="full"
-          >
-          Вся страна
-        </button>
-        <button
-          type="button"
-          class="setViewBtn btn btn-sm btn-primary"
-          data-value="europe"
-          >
-          Европейская часть
-        </button>
-      </div>
-    </div>
-    <div id="territory-chart" class="chart territory-chart">
-      <div class="loading">
-        <div class="loading-content">
-          Загрузка данных ...
+  <div class="wrapper">
+    <div class="container d-flex flex-column screen screen_top content hide-controls" id="territory-chart-box">
+      <h1>Карта заражения инфекцией Covid-19 в России</h1>
+      <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-center">
+        <div class="control btn-group btn-group-sm mb-1" role="group">
+          <button
+            type="button"
+            class="showTypeBtn btn btn-info active"
+            data-value="confirmed"
+            >
+            Заразились
+          </button>
+          <button
+            type="button"
+            class="showTypeBtn btn btn-info"
+            data-value="recovered"
+            >
+            Вылечились
+          </button>
+          <button
+            type="button"
+            class="showTypeBtn btn btn-info"
+            data-value="deaths"
+            >
+            Умерли
+          </button>
+        </div>
+        <div class="control mb-1">
+          <button
+            type="button"
+            class="showTypeBtn btn btn-info btn-sm"
+            data-value="relative"
+            >
+            Заразившихся на 10 000 чел.
+          </button>
+        </div>
+        <div class="mb-1">
+          <button
+            type="button"
+            class="setViewBtn btn btn-sm btn-primary"
+            data-value="full"
+            >
+            Вся страна
+          </button>
+          <button
+            type="button"
+            class="setViewBtn btn btn-sm btn-primary"
+            data-value="europe"
+            >
+            Европейская часть
+          </button>
         </div>
       </div>
-      <div class="progress load-progress">
-        <div
-          class="progress-bar progress-bar-striped progress-bar-animated"
-          role="progressbar"
-          style="width: 0%"
-          >
+      <div id="territory-chart" class="chart territory-chart">
+        <div class="loading">
+          <div class="loading-content">
+            Загрузка данных ...
+          </div>
+        </div>
+        <div class="progress load-progress">
+          <div
+            class="progress-bar progress-bar-striped progress-bar-animated"
+            role="progressbar"
+            style="width: 0%"
+            >
+          </div>
         </div>
       </div>
+      <div id="tooltip" class="map-tooltip">&nbsp;</div>
+      <form id="confirmed-timelapse" class="control timelapse-control d-flex align-items-center">
+        <button name=b type=button class="btn btn-sm btn-secondary mr-3"></button>
+        <input name=i type=range min=0 step=1 class="flex-grow-1">
+        <output name=o class="ml-3"></output>
+      </form>
     </div>
-    <div id="tooltip" class="map-tooltip">&nbsp;</div>
-    <form id="confirmed-timelapse" class="control timelapse-control d-flex align-items-center">
-      <button name=b type=button class="btn btn-sm btn-secondary mr-3"></button>
-      <input name=i type=range min=0 step=1 class="flex-grow-1">
-      <output name=o class="ml-3"></output>
-    </form>
-  </div>
-  <div class="container screen d-flex flex-column hide-controls" id="region-chart-box">
-    <h2>График зараженных по региону <em class="region-title"></em></h2>
-    <p class="region-description text-center">
-      <em>Выберите регион на карте</em>
-    </p>
-    <div id="region-chart" class="chart">
-      <div class="loading">
-        <div class="loading-content">
-          Загрузка данных ...
+    <div class="popup" id="region-popup">
+      <button type="button" class="close">
+        &times;
+      </button>
+      <div class="container screen d-flex flex-column hide-controls" id="region-chart-box">
+        <h2>График зараженных по региону <em class="region-title"></em></h2>
+        <p class="region-description text-center">
+          <em>Выберите регион на карте</em>
+        </p>
+        <div id="region-chart" class="chart">
+          <div class="loading">
+            <div class="loading-content">
+              Загрузка данных ...
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-    <div class="control text-center">
-      <div class="btn-group btn-group-sm form-btn-group" role="group">
-        <button
-          type="button"
-          class="regionTypeBtn btn btn-info active"
-          data-value="inc"
-          >
-          Динамика новых случаев
-        </button>
-        <button
-          type="button"
-          class="regionTypeBtn btn btn-info"
-          data-value="full"
-          >
-          Общее количество
-        </button>
+        <div class="control text-center">
+          <div class="btn-group btn-group-sm form-btn-group" role="group">
+            <button
+              type="button"
+              class="regionTypeBtn btn btn-info active"
+              data-value="inc"
+              >
+              Динамика новых случаев
+            </button>
+            <button
+              type="button"
+              class="regionTypeBtn btn btn-info"
+              data-value="full"
+              >
+              Общее количество
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

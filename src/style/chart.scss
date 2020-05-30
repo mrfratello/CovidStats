@@ -109,9 +109,13 @@ $deaths-color: #ff6666;
 }
 
 .map-tooltip {
-  $line: 1.4rem;
-  height: 3 * $line;
+  $line: 1.3rem;
+  height: 4 * $line;
   line-height: $line;
+}
+
+.region-description {
+  min-height: 90px;
 }
 
 .map-tooltip,

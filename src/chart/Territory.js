@@ -12,7 +12,6 @@ import {
   interpolateOranges,
   interpolateGreens,
   interpolateReds,
-  interpolateOrRd,
 } from 'd3-scale-chromatic'
 import { format } from 'd3-format'
 import transition from '../transition'
@@ -48,7 +47,6 @@ export class Territory extends BaseChart {
   }
   relativeValues = []
   _loaded = false
-  _clicked = false
 
   constructor(selector, regionChart) {
     super(selector)
@@ -379,11 +377,10 @@ export class Territory extends BaseChart {
         `)
       })
       .on('click', function({ stat }) {
-        me.regionChart.setDataset(stat)
-        if (!me._clicked) {
-          me.regionChart.scrollToChart()
-          me._clicked = true
-        }
+        me.regionChart.show()
+          .then((regionChart) => {
+            regionChart.setDataset(stat)
+          })
       })
   }
 

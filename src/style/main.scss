@@ -10,9 +10,9 @@ $btn-focus-width: 0;
 
 @import "~bootstrap/scss/bootstrap";
 
+$nav-bar-height: 56px;
 
 .screen {
-  $nav-bar-height: 56px;
   $padding: 20px;
 
   min-height: 100vh;
@@ -89,6 +89,39 @@ $btn-focus-width: 0;
 
 label {
   cursor: pointer;
+}
+
+.wrapper {
+  position: relative;
+
+  .popup {
+    position: absolute;
+    background: #fff;
+    top: $nav-bar-height;
+    width: 100%;
+    z-index: 100;
+    visibility: hidden;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, .3);
+
+    &.show {
+      visibility: visible;
+    }
+    .close {
+      float: none;
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 3rem;
+      font-weight: 400;
+      text-shadow: none;
+      opacity: .7;
+      margin-top: .5rem;
+      margin-right: 1rem;
+    }
+    h2 {
+      margin-right: 2rem;
+    }
+  }
 }
 
 @import "./chart.scss";

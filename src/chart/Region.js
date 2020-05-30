@@ -21,9 +21,13 @@ export default class RegionChart extends BaseChart {
     this.updateSizes()
     this.zoom.on(`zoom.${this.id}`, null)
     this.initScales()
+    this.popup = select('#region-popup')
     this.box = select('#region-chart-box')
     this.title = this.box.select('.region-title')
     this.description = this.box.select('.region-description')
+
+    this.popup.select('.close')
+      .on('click', () => { this.hide() })
 
     this.renderAxes()
     this.renderBars()
@@ -49,9 +53,11 @@ export default class RegionChart extends BaseChart {
   }
 
   updateAxes() {
+    console.trace('updateAxes')
     this.countAxis.scale(this.countScale)
 
     this.countAxisBox
+      .interrupt()
       .transition(transition)
       .attr('transform', `translate(${this.marginLeft + this.innerWidth}, 0)`)
       .call(this.countAxis)
@@ -69,6 +75,7 @@ export default class RegionChart extends BaseChart {
           : value
       ))
     this.timeAxisBox
+      .interrupt()
       .transition(transition)
       .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
       .call(this.timeAxis)
@@ -102,11 +109,15 @@ export default class RegionChart extends BaseChart {
     }, 500)
   }
 
-  scrollToChart() {
-    window.scrollTo({
-      top: this.box.node().offsetTop,
-      behavior: 'smooth',
+  show() {
+    this.popup.classed('show', true)
+    return new Promise((resolve) => {
+      setTimeout(() => { resolve(this) }, 400)
     })
+  }
+
+  hide() {
+    this.popup.classed('show', false)
   }
 
   renderData(data) {
