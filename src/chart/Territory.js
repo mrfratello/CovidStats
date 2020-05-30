@@ -12,6 +12,7 @@ import {
   interpolateOranges,
   interpolateGreens,
   interpolateReds,
+  interpolateOrRd,
 } from 'd3-scale-chromatic'
 import { format } from 'd3-format'
 import transition from '../transition'
@@ -43,7 +44,9 @@ export class Territory extends BaseChart {
     confirmed: interpolateOranges,
     recovered: interpolateGreens,
     deaths: interpolateReds,
+    relative: interpolateOranges,
   }
+  relativeValues = []
   _loaded = false
   _clicked = false
 
@@ -107,7 +110,7 @@ export class Territory extends BaseChart {
     const interpolations = this.interpolations
     this.defs
       .selectAll('linearGradient')
-      .data(['confirmed', 'recovered', 'deaths'])
+      .data(['confirmed', 'recovered', 'deaths', 'relative'])
       .enter()
       .append('linearGradient')
       .attr('id', (d) => `${d}Gradient`)
@@ -149,6 +152,12 @@ export class Territory extends BaseChart {
       .range([0, this.meanRatio, 1])
   }
 
+  setRelativeStatData() {
+    this.scaleDict.relative = scaleDiverging()
+      .domain([0, mean(this.relativeValues), max(this.relativeValues)])
+      .range([0, this.meanRatio, 1])
+  }
+
   getRegions(index = 0) {
     if (index >= this.mapParts) {
       this.progress.select('.progress-bar')
@@ -175,17 +184,24 @@ export class Territory extends BaseChart {
 
   merdeDataset(geo) {
     geo.features.forEach((feature) => {
+      const stat = this.byRegions
+        .find((region) => (
+          region.territoryName === feature.properties.name
+          || region.territoryName === feature.properties.full_name
+        ))
+      const relative = stat.confirmed / feature.properties.population * 10000
+      this.relativeValues.push(relative)
       this.dataset.features.push({
         type: feature.type,
         geometry: feature.geometry,
         properties: feature.properties,
-        stat: this.byRegions
-          .find((region) => (
-            region.territoryName === feature.properties.name
-            || region.territoryName === feature.properties.full_name
-          ))
+        stat: {
+          ...stat,
+          relative,
+        },
       })
     })
+    this.setRelativeStatData()
   }
 
   initEuropeDataset() {
@@ -285,6 +301,7 @@ export class Territory extends BaseChart {
 
     this.chromaticLeftAxisBox
       .attr('transform', `translate(0, ${yPosition})`)
+      .interrupt()
       .transition(transition)
       .call(
         axisBottom()
@@ -299,6 +316,7 @@ export class Territory extends BaseChart {
 
     this.chromaticRightAxisBox
       .attr('transform', `translate(0, ${yPosition})`)
+      .interrupt()
       .transition(transition)
       .call(
         axisBottom()
@@ -308,6 +326,7 @@ export class Territory extends BaseChart {
       )
 
     this.chromaticColor
+      .interrupt()
       .transition(transition)
       .attr('y', yPosition - 10)
       .attr('width', width)
@@ -340,16 +359,23 @@ export class Territory extends BaseChart {
         let confirmed = '?'
         let recovered = '?'
         let deaths = '?'
+        let relative = '?'
         if (stat) {
           confirmed = me.getTooltipValue(stat, 'confirmed')
           recovered = me.getTooltipValue(stat, 'recovered')
           deaths = me.getTooltipValue(stat, 'deaths')
+          relative = me.getTooltipValue(stat, 'relative')
         }
         tooltip.html(`
           ${properties.name}
           <span class="cases">${confirmed}</span>&nbsp;
           <span class="recover">${recovered}</span>&nbsp;
           <span class="deaths">${deaths}</span>&nbsp;
+          <br>
+          <small>
+            На каждые 10 000 человек приходится
+            <span class="cases"><strong>${relative}</strong> заразившихся</span>
+          </small>
         `)
       })
       .on('click', function({ stat }) {

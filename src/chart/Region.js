@@ -117,6 +117,11 @@ export default class RegionChart extends BaseChart {
         <span class="cases">${this.getTooltipValue(data, 'confirmed')}</span>&nbsp;
         <span class="recover">${this.getTooltipValue(data, 'recovered')}</span>&nbsp;
         <span class="deaths">${this.getTooltipValue(data, 'deaths')}</span>&nbsp;
+        <br>
+        <small>
+          На каждые 10 000 человек приходится
+          <span class="cases"><strong>${this.getTooltipValue(data, 'relative')}</strong> заразившихся</span>
+        </small>
       `)
   }
 
