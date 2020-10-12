@@ -53,7 +53,6 @@ export default class RegionChart extends BaseChart {
   }
 
   updateAxes() {
-    console.trace('updateAxes')
     this.countAxis.scale(this.countScale)
 
     this.countAxisBox
@@ -130,8 +129,10 @@ export default class RegionChart extends BaseChart {
         <span class="deaths">${this.getTooltipValue(data, 'deaths')}</span>&nbsp;
         <br>
         <small>
-          На каждые 10 000 человек приходится
-          <span class="cases"><strong>${this.getTooltipValue(data, 'relative')}</strong> заразившихся</span>
+          На каждые 100 000 человек приходится
+          <span class="cases"><strong>${this.getTooltipValue(data, 'confirmedRelative')}</strong> заразившихся</span>
+          и
+          <span class="deaths"><strong>${this.getTooltipValue(data, 'deathsRelative')}</strong> умерших</span>
         </small>
       `)
   }

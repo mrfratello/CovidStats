@@ -1,6 +1,7 @@
 import { selectAll, select } from 'd3-selection'
 import './format'
 import './ui/navbar'
+import './ui/dropdown'
 import TerritoryChart from './chart/Territory'
 import RegionChart from './chart/Region'
 import MapTimelapse from './timelapse/Map'
@@ -8,6 +9,7 @@ import './style/main.scss'
 
 const regionChart = new RegionChart('region-chart')
 const territoryChart = new TerritoryChart('territory-chart', regionChart)
+const compositeType = ['confirmed', '']
 
 new MapTimelapse(
   document.getElementById('confirmed-timelapse'),
@@ -15,14 +17,15 @@ new MapTimelapse(
   selectAll('.showTypeBtn')
 )
 
-selectAll('.showTypeBtn')
-  .on('click', function() {
-    const type = this.dataset.value
-    selectAll('.showTypeBtn')
-      .each(function() {
-        select(this).classed('active', this.dataset.value === type)
-      })
-    territoryChart.setType(type)
+selectAll('.showType0Btn')
+  .on('change', function() {
+    compositeType[0] = this.dataset.value
+    territoryChart.setType(compositeType.join(''))
+  })
+selectAll('.showType1Btn')
+  .on('change', function() {
+    compositeType[1] = this.dataset.value
+    territoryChart.setType(compositeType.join(''))
   })
 
 selectAll('.setViewBtn')

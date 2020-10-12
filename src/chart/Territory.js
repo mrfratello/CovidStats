@@ -43,9 +43,11 @@ export class Territory extends BaseChart {
     confirmed: interpolateOranges,
     recovered: interpolateGreens,
     deaths: interpolateReds,
-    relative: interpolateOranges,
+    confirmedRelative: interpolateOranges,
+    deathsRelative: interpolateReds,
   }
-  relativeValues = []
+  confirmedRelativeValues = []
+  deathsRelativeValues = []
   _loaded = false
 
   constructor(selector, regionChart) {
@@ -108,7 +110,7 @@ export class Territory extends BaseChart {
     const interpolations = this.interpolations
     this.defs
       .selectAll('linearGradient')
-      .data(['confirmed', 'recovered', 'deaths', 'relative'])
+      .data(['confirmed', 'recovered', 'deaths', 'confirmedRelative', 'deathsRelative'])
       .enter()
       .append('linearGradient')
       .attr('id', (d) => `${d}Gradient`)
@@ -151,8 +153,11 @@ export class Territory extends BaseChart {
   }
 
   setRelativeStatData() {
-    this.scaleDict.relative = scaleDiverging()
-      .domain([0, mean(this.relativeValues), max(this.relativeValues)])
+    this.scaleDict.confirmedRelative = scaleDiverging()
+      .domain([0, mean(this.confirmedRelativeValues), max(this.confirmedRelativeValues)])
+      .range([0, this.meanRatio, 1])
+    this.scaleDict.deathsRelative = scaleDiverging()
+      .domain([0, mean(this.deathsRelativeValues), max(this.deathsRelativeValues)])
       .range([0, this.meanRatio, 1])
   }
 
@@ -187,15 +192,18 @@ export class Territory extends BaseChart {
           region.territoryName === feature.properties.name
           || region.territoryName === feature.properties.full_name
         ))
-      const relative = stat.confirmed / feature.properties.population * 10000
-      this.relativeValues.push(relative)
+      const confirmedRelative = stat.confirmed / feature.properties.population * 100000
+      const deathsRelative = stat.deaths / feature.properties.population * 100000
+      this.confirmedRelativeValues.push(confirmedRelative)
+      this.deathsRelativeValues.push(deathsRelative)
       this.dataset.features.push({
         type: feature.type,
         geometry: feature.geometry,
         properties: feature.properties,
         stat: {
           ...stat,
-          relative,
+          confirmedRelative,
+          deathsRelative,
         },
       })
     })
@@ -357,12 +365,14 @@ export class Territory extends BaseChart {
         let confirmed = '?'
         let recovered = '?'
         let deaths = '?'
-        let relative = '?'
+        let confirmedRelative = '?'
+        let deathsRelative = '?'
         if (stat) {
           confirmed = me.getTooltipValue(stat, 'confirmed')
           recovered = me.getTooltipValue(stat, 'recovered')
           deaths = me.getTooltipValue(stat, 'deaths')
-          relative = me.getTooltipValue(stat, 'relative')
+          confirmedRelative = me.getTooltipValue(stat, 'confirmedRelative')
+          deathsRelative = me.getTooltipValue(stat, 'deathsRelative')
         }
         tooltip.html(`
           ${properties.name}
@@ -371,8 +381,10 @@ export class Territory extends BaseChart {
           <span class="deaths">${deaths}</span>&nbsp;
           <br>
           <small>
-            На каждые 10 000 человек приходится
-            <span class="cases"><strong>${relative}</strong> заразившихся</span>
+            На каждые 100 000 человек приходится
+            <span class="cases"><strong>${confirmedRelative}</strong> заразившихся</span>
+            и
+            <span class="deaths"><strong>${deathsRelative}</strong> умерших</span>
           </small>
         `)
       })

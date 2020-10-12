@@ -4,7 +4,7 @@ import { DURATION } from '../transition'
 import { shortDate } from '../format/date'
 import dataset from '../Dataset'
 
-const START_DAY = new Date(2020, 2, 14)
+const START_DAY = new Date(2020, 3, 15)
 
 export default class MapTimelapse {
   constructor(node, chart, controls) {
