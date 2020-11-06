@@ -1,164 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Covid Stats Russia</title>
-</head>
-<body>
-  <nav class="navbar navbar-expand-md navbar-dark bg-primary">
-    <span class="navbar-brand mb-0 h1">Covid Stat</span>
-    <button class="navbar-toggler" type="button">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse">
-      <div class="navbar-nav">
-        <a class="nav-item nav-link" href="#chart-box">Графики</a>
-        <a class="nav-item nav-link" href="/map.html">Карта</a>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Covid Stats Russia</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-primary">
+      <span class="navbar-brand mb-0 h1">Covid Stat</span>
+      <button class="navbar-toggler" type="button">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse">
+        <div class="navbar-nav">
+          <a class="nav-item nav-link" href="#chart-box">Графики</a>
+          <a class="nav-item nav-link" href="/map.html">Карта</a>
+        </div>
+      </div>
+    </nav>
+    <div class="container-fluid screen screen_top">
+      <div class="container content">
+        <h1>Статистика заражения инфекцией Covid-19 в России</h1>
+        <p>
+          Смотрим под разными углами на статистку заболеваемости вирусом
+          Covid-19. Анализируем динамику заражения и излечения. Надеемся увидеть
+          спад пандемии.
+        </p>
+        <p>
+          И не забываем &mdash; за этими цифрами находятся реальные люди.<br />
+          Не пополняйте статистику - спасибо тем, кто дома!
+        </p>
+        <p>
+          <small
+            >Данные с ресурса
+            <a href="https://covid.2gis.ru" target="_blank">2GIS</a></small
+          >
+        </p>
+        <p>
+          Переходим <a class="go-to-chart" href="#chart-box">на графики ↓</a> и
+          <a href="/map.html">на карту →</a>
+        </p>
       </div>
     </div>
-  </nav>
-  <div class="container-fluid screen screen_top">
-    <div class="container content">
-      <h1>Статистика заражения инфекцией Covid-19 в России</h1>
-      <p>
-        Смотрим под разными углами на статистку заболеваемости вирусом Covid-19.
-        Анализируем динамику заражения и излечения.
-        Надеемся увидеть спад пандемии.
-      </p>
-      <p>
-        И не забываем &mdash; за этими цифрами находятся реальные люди.<br>
-        Не пополняйте статистику - спасибо тем, кто дома!
-      </p>
-      <p><small>Данные с ресурса <a href="https://covid.2gis.ru" target="_blank">2GIS</a></small></p>
-      <p>Переходим <a class="go-to-chart" href="#chart-box">на графики ↓</a> и <a href="/map.html">на карту →</a></p>
-    </div>
-  </div>
-  <div class="container-fluid screen d-flex flex-column" id="chart-box">
-    <div id="chart_tools">
-      <h2>Основной график</h2>
+    <div class="container-fluid screen d-flex flex-column" id="chart-box">
+      <div id="chart_tools">
+        <h2>Основной график</h2>
+        <div class="text-center">
+          <div class="btn-group btn-group-sm form-btn-group" role="group">
+            <button
+              type="button"
+              class="scaleTypeBtn btn btn-primary active"
+              data-value="linear"
+            >
+              Равномерно
+            </button>
+            <button
+              type="button"
+              class="scaleTypeBtn btn btn-primary"
+              data-value="pow"
+            >
+              Не равномерно
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="chart" class="chart container">
+        <div class="loading">
+          <div class="loading-content">Загрузка данных ...</div>
+        </div>
+      </div>
       <div class="text-center">
         <div class="btn-group btn-group-sm form-btn-group" role="group">
           <button
             type="button"
-            class="scaleTypeBtn btn btn-primary active"
-            data-value="linear"
-            >
-            Равномерно
+            class="chartTypeBtn btn btn-info active"
+            data-value="period"
+          >
+            Динамика новых случаев
           </button>
           <button
             type="button"
-            class="scaleTypeBtn btn btn-primary"
-            data-value="pow"
-            >
-            Не равномерно
+            class="chartTypeBtn btn btn-info"
+            data-value="all"
+          >
+            Общее количество
+          </button>
+          <button
+            type="button"
+            class="chartTypeBtn btn btn-info"
+            data-value="allSicks"
+          >
+            Активные больные
+          </button>
+        </div>
+      </div>
+      <div class="container content">
+        <p class="typeDescription" data-type="all">
+          <strong>Общее количество</strong> зараженных, вылечившихся и умерших
+          <strong>нарастающим итогом</strong>. Данный тип графика наиболее
+          распространен.
+        </p>
+        <p class="typeDescription active" data-type="period">
+          <strong>Динамика</strong> заражения, выздоровления и смертности
+          <strong>за каждый день</strong>. Отображаются только новые случаи за
+          соответствующий день. График позволит увидеть пик заражения и её спад.
+        </p>
+        <p class="typeDescription" data-type="allSicks">
+          Показано <strong>количество больных</strong> короновирусной инфекцией
+          <strong>на конкретный день</strong>. Человек перестает быть больным,
+          когда он вылечился или умер от болезни. Эта динамика аналогия
+          загруженности медицинской системы.
+        </p>
+      </div>
+      <p>
+        <a class="go-to-chart" href="#offset-chart">График со смещением ↓</a>
+      </p>
+    </div>
+    <div id="offset-chart" class="container-fluid screen d-flex flex-column">
+      <h2>Динамика новых случаев со смещением</h2>
+      <div class="container content">
+        <p>
+          Согласно новостям из СМИ, период болезни составляет две недели. Можно
+          предположить, что заразившийся 11 марта попадет в число вылечившихся
+          25 марта. На графике можно грубо оценить продолжительность активной
+          болезни.
+        </p>
+      </div>
+      <div class="container">
+        <div class="form-group">
+          <label for="periodOffsetChartOffset"
+            >Смещение на <em>3 недели</em></label
+          >
+          <input
+            id="periodOffsetChartOffset"
+            type="range"
+            class="form-control-range periodOffsetChartOffset"
+            min="13"
+            max="27"
+            step="1"
+            value="20"
+          />
+        </div>
+      </div>
+      <div id="period-offset-chart" class="chart container">
+        <div class="loading">
+          <div class="loading-content">Загрузка данных ...</div>
+        </div>
+      </div>
+      <div class="text-center">
+        <div class="btn-group btn-group-sm form-btn-group" role="group">
+          <button
+            type="button"
+            class="periodOffsetChartTypeBtn btn btn-info active"
+            data-value="total"
+          >
+            Нарастающим итогом
+          </button>
+          <button
+            type="button"
+            class="periodOffsetChartTypeBtn btn btn-info"
+            data-value="dynamic"
+          >
+            Ежедневная динамика
           </button>
         </div>
       </div>
     </div>
-    <div id="chart" class="chart container">
-      <div class="loading">
-        <div class="loading-content">
-          Загрузка данных ...
-        </div>
-      </div>
-    </div>
-    <div class="text-center">
-      <div class="btn-group btn-group-sm form-btn-group" role="group">
-        <button
-          type="button"
-          class="chartTypeBtn btn btn-info active"
-          data-value="period"
-          >
-          Динамика новых случаев
-        </button>
-        <button
-          type="button"
-          class="chartTypeBtn btn btn-info"
-          data-value="all"
-          >
-          Общее количество
-        </button>
-        <button
-          type="button"
-          class="chartTypeBtn btn btn-info"
-          data-value="allSicks"
-          >
-          Активные больные
-        </button>
-      </div>
-    </div>
-    <div class="container content">
-      <p class="typeDescription" data-type="all">
-        <strong>Общее количество</strong> зараженных, вылечившихся и умерших <strong>нарастающим итогом</strong>.
-        Данный тип графика наиболее распространен.
-      </p>
-      <p class="typeDescription active" data-type="period">
-        <strong>Динамика</strong> заражения, выздоровления и смертности <strong>за каждый день</strong>.
-        Отображаются только новые случаи за соответствующий день.
-        График позволит увидеть пик заражения и её спад.
-      </p>
-      <p class="typeDescription" data-type="allSicks">
-        Показано <strong>количество больных</strong> короновирусной инфекцией <strong>на конкретный день</strong>.
-        Человек перестает быть больным, когда он вылечился или умер от болезни.
-        Эта динамика аналогия загруженности медицинской системы.
-      </p>
-    </div>
-    <p><a class="go-to-chart" href="#offset-chart">График со смещением ↓</a></p>
-  </div>
-  <div id="offset-chart" class="container-fluid screen d-flex flex-column">
-    <h2>Динамика новых случаев со смещением</h2>
-    <div class="container content">
-      <p>
-        Согласно новостям из СМИ, период болезни составляет две недели.
-        Можно предположить, что заразившийся 11 марта попадет в число вылечившихся 25 марта.
-        На графике можно грубо оценить продолжительность активной болезни.
-      </p>
-    </div>
-    <div class="container">
-      <div class="form-group">
-        <label for="periodOffsetChartOffset">Смещение на <em>3 недели</em></label>
-        <input
-          id="periodOffsetChartOffset"
-          type="range"
-          class="form-control-range periodOffsetChartOffset"
-          min="13"
-          max="27"
-          step="1"
-          value="20"
-          >
-      </div>
-    </div>
-    <div id="period-offset-chart" class="chart container">
-      <div class="loading">
-        <div class="loading-content">
-          Загрузка данных ...
-        </div>
-      </div>
-    </div>
-    <div class="text-center">
-      <div class="btn-group btn-group-sm form-btn-group" role="group">
-        <button
-          type="button"
-          class="periodOffsetChartTypeBtn btn btn-info active"
-          data-value="total"
-          >
-          Нарастающим итогом
-        </button>
-        <button
-          type="button"
-          class="periodOffsetChartTypeBtn btn btn-info"
-          data-value="dynamic"
-          >
-          Ежедневная динамика
-        </button>
-      </div>
-    </div>
-  </div>
-  <h3 class="text-center">Комментарии</h3>
-  <div class="powr-comments" id="d611ad1a_1586129861"></div>
+    <h3 class="text-center">Комментарии</h3>
+    <div class="powr-comments" id="d611ad1a_1586129861"></div>
 
-  <script src="https://www.powr.io/powr.js?platform=html"></script>
-  <script type="text/javascript" > (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)}; m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)}) (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym"); ym(33220433, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true, trackHash:true }); </script> <noscript><div><img src="https://mc.yandex.ru/watch/33220433" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-</body>
+    <script src="https://www.powr.io/powr.js?platform=html"></script>
+    <%= htmlWebpackPlugin.options.metrika %>
+  </body>
 </html>

@@ -8,9 +8,9 @@ $deaths-color: #ff6666;
 
 .chart {
   .updateTime {
-    fill: #9F9F9F;
+    fill: #9f9f9f;
     font-size: 10px;
-    font-style: italic;;
+    font-style: italic;
   }
   .overBar {
     fill: transparent;
@@ -48,7 +48,7 @@ $deaths-color: #ff6666;
   z-index: 100;
   font-size: 12px;
   line-height: 1;
-  background: rgba(255, 255, 255, .8);
+  background: rgba(255, 255, 255, 0.8);
   padding: 3px;
   text-align: right;
   top: 0;
@@ -90,7 +90,7 @@ $deaths-color: #ff6666;
     position: relative;
     stroke: $territory-stroke-color;
     stroke-linejoin: round;
-    stroke-opacity: .5;
+    stroke-opacity: 0.5;
 
     &:hover {
       stroke: darken($territory-stroke-color, 50%);
@@ -137,7 +137,7 @@ $deaths-color: #ff6666;
 
 .timelapse-control {
   output {
-    font-size: .8rem;
+    font-size: 0.8rem;
     flex-basis: 50px;
   }
 }

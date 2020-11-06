@@ -4,10 +4,7 @@ import { max, mean } from 'd3-array'
 import { select, event } from 'd3-selection'
 import { scaleDiverging, scaleLinear } from 'd3-scale'
 import { axisBottom } from 'd3-axis'
-import {
-  geoPath,
-  geoMercator,
-} from 'd3-geo'
+import { geoPath, geoMercator } from 'd3-geo'
 import {
   interpolateOranges,
   interpolateGreens,
@@ -24,21 +21,30 @@ const signInt = format('+,d')
 
 export class Territory extends BaseChart {
   marginLeft = 0
+
   marginRight = 0
+
   marginBottom = 40
+
   marginTop = 0
-  meanRatio = .5
+
+  meanRatio = 0.5
+
   axesPadding = 30
 
   mapParts = 1
+
   VERSION = 'v1.1'
 
   view = 'full'
+
   type = 'confirmed'
+
   dataset = {
     type: 'FeatureCollection',
     features: [],
   }
+
   interpolations = {
     confirmed: interpolateOranges,
     recovered: interpolateGreens,
@@ -46,8 +52,11 @@ export class Territory extends BaseChart {
     confirmedRelative: interpolateOranges,
     deathsRelative: interpolateReds,
   }
+
   confirmedRelativeValues = []
+
   deathsRelativeValues = []
+
   _loaded = false
 
   constructor(selector, regionChart) {
@@ -61,12 +70,11 @@ export class Territory extends BaseChart {
     this.regionChart = regionChart
     this.progress = this.container.select('.load-progress')
 
-    dataset.getAll()
-      .then(({ regions }) => {
-        this.setStatData(regions)
-        this.render()
-        this.getRegions()
-      })
+    dataset.getAll().then(({ regions }) => {
+      this.setStatData(regions)
+      this.render()
+      this.getRegions()
+    })
   }
 
   updateClipPath() {
@@ -80,14 +88,9 @@ export class Territory extends BaseChart {
   updateZoom() {
     const extent = [
       [0, 0],
-      [
-        this.innerWidth,
-        this.innerHeight,
-      ],
+      [this.innerWidth, this.innerHeight],
     ]
-    this.zoom
-      .translateExtent(extent)
-      .extent(extent)
+    this.zoom.translateExtent(extent).extent(extent)
   }
 
   resetZoom() {
@@ -102,20 +105,26 @@ export class Territory extends BaseChart {
     setTimeout(() => {
       this.progress.remove()
     }, 1000)
-    select('#territory-chart-box')
-      .classed('hide-controls', false)
+    select('#territory-chart-box').classed('hide-controls', false)
   }
 
   initGradients() {
-    const interpolations = this.interpolations
+    const { interpolations } = this
     this.defs
       .selectAll('linearGradient')
-      .data(['confirmed', 'recovered', 'deaths', 'confirmedRelative', 'deathsRelative'])
+      .data([
+        'confirmed',
+        'recovered',
+        'deaths',
+        'confirmedRelative',
+        'deathsRelative',
+      ])
       .enter()
       .append('linearGradient')
       .attr('id', (d) => `${d}Gradient`)
-      .each(function(type) {
-        select(this).selectAll('stop')
+      .each(function (type) {
+        select(this)
+          .selectAll('stop')
           .data([0, 25, 50, 75, 100])
           .enter()
           .append('stop')
@@ -125,9 +134,7 @@ export class Territory extends BaseChart {
   }
 
   getColor(value) {
-    return this.interpolations[this.type](
-      this.scale(value)
-    )
+    return this.interpolations[this.type](this.scale(value))
   }
 
   getCofirmedColor(value) {
@@ -154,46 +161,51 @@ export class Territory extends BaseChart {
 
   setRelativeStatData() {
     this.scaleDict.confirmedRelative = scaleDiverging()
-      .domain([0, mean(this.confirmedRelativeValues), max(this.confirmedRelativeValues)])
+      .domain([
+        0,
+        mean(this.confirmedRelativeValues),
+        max(this.confirmedRelativeValues),
+      ])
       .range([0, this.meanRatio, 1])
     this.scaleDict.deathsRelative = scaleDiverging()
-      .domain([0, mean(this.deathsRelativeValues), max(this.deathsRelativeValues)])
+      .domain([
+        0,
+        mean(this.deathsRelativeValues),
+        max(this.deathsRelativeValues),
+      ])
       .range([0, this.meanRatio, 1])
   }
 
   getRegions(index = 0) {
     if (index >= this.mapParts) {
-      this.progress.select('.progress-bar')
-        .style('width', '100%')
+      this.progress.select('.progress-bar').style('width', '100%')
       this.afterLoad()
       return
     }
-    const width = this.mapParts !== 1
-      ? index / this.mapParts * 100
-      : 100
-    this.progress.select('.progress-bar')
-      .style('width', `${width}%`)
+    const width = this.mapParts !== 1 ? (index / this.mapParts) * 100 : 100
+    this.progress.select('.progress-bar').style('width', `${width}%`)
     let filename = `part-${index}.${this.VERSION}`
     if (isMobile(window.navigator).phone) {
       filename += '.slim'
     }
-    axios.get(`/api/json/regions/${filename}.geojson`)
-      .then(({ data }) => {
-        this.merdeDataset(data)
-        this.updateRegions()
-        this.getRegions(index + 1)
-      })
+    axios.get(`/api/json/regions/${filename}.geojson`).then(({ data }) => {
+      this.merdeDataset(data)
+      this.updateRegions()
+      this.getRegions(index + 1)
+    })
   }
 
   merdeDataset(geo) {
     geo.features.forEach((feature) => {
-      const stat = this.byRegions
-        .find((region) => (
-          region.territoryName === feature.properties.name
-          || region.territoryName === feature.properties.full_name
-        ))
-      const confirmedRelative = stat.confirmed / feature.properties.population * 100000
-      const deathsRelative = stat.deaths / feature.properties.population * 100000
+      const stat = this.byRegions.find(
+        (region) =>
+          region.territoryName === feature.properties.name ||
+          region.territoryName === feature.properties.full_name,
+      )
+      const confirmedRelative =
+        (stat.confirmed / feature.properties.population) * 100000
+      const deathsRelative =
+        (stat.deaths / feature.properties.population) * 100000
       this.confirmedRelativeValues.push(confirmedRelative)
       this.deathsRelativeValues.push(deathsRelative)
       this.dataset.features.push({
@@ -213,34 +225,31 @@ export class Territory extends BaseChart {
   initEuropeDataset() {
     this.europeDataset = {
       type: 'FeatureCollection',
-      features: this.dataset.features
-        .filter((item) => (
-          [
-            'Калининградская область',
-            'Карелия',
-            'Дагестан',
-            'Свердловская область',
-          ].includes(item.properties.name)
-        ))
+      features: this.dataset.features.filter((item) =>
+        [
+          'Калининградская область',
+          'Карелия',
+          'Дагестан',
+          'Свердловская область',
+        ].includes(item.properties.name),
+      ),
     }
   }
 
   initPath() {
-    this.projection = geoMercator()
-      .rotate([-100, -60, 5])
-    this.geoPath = geoPath()
-      .projection(this.projection)
+    this.projection = geoMercator().rotate([-100, -60, 5])
+    this.geoPath = geoPath().projection(this.projection)
   }
 
   updatePathBySize() {
-    const dataset = this.view === 'full'
-      ? this.dataset
-      : this.europeDataset
-    this.projection
-      .fitSize(
-        [this.innerWidth - 2 * this.axesPadding, this.innerHeight - 2 * this.axesPadding],
-        dataset,
-      )
+    const data = this.view === 'full' ? this.dataset : this.europeDataset
+    this.projection.fitSize(
+      [
+        this.innerWidth - 2 * this.axesPadding,
+        this.innerHeight - 2 * this.axesPadding,
+      ],
+      data,
+    )
   }
 
   setFullProjection() {
@@ -248,7 +257,10 @@ export class Territory extends BaseChart {
     this.projection
       .rotate([-100, -60, 5])
       .fitSize(
-        [this.innerWidth - 2 * this.axesPadding, this.innerHeight - 2 * this.axesPadding],
+        [
+          this.innerWidth - 2 * this.axesPadding,
+          this.innerHeight - 2 * this.axesPadding,
+        ],
         this.dataset,
       )
     this.resetZoom()
@@ -260,7 +272,10 @@ export class Territory extends BaseChart {
     this.projection
       .rotate([-80, -60, 0])
       .fitSize(
-        [this.innerWidth - 2 * this.axesPadding, this.innerHeight - 2 * this.axesPadding],
+        [
+          this.innerWidth - 2 * this.axesPadding,
+          this.innerHeight - 2 * this.axesPadding,
+        ],
         this.europeDataset,
       )
     this.resetZoom()
@@ -270,19 +285,26 @@ export class Territory extends BaseChart {
   render() {
     this.renderAxes()
 
-    this.map = this.svg.append('g')
+    this.map = this.svg
+      .append('g')
       .attr('clip-path', `url(#clip-${this.id})`)
-        .append('g')
-        .attr('transform', `translate(${this.marginLeft + this.axesPadding}, ${this.marginTop + this.axesPadding})`)
-          .append('g')
-          .classed('map', true)
-          .attr('stroke-width', .5);
+      .append('g')
+      .attr(
+        'transform',
+        `translate(${this.marginLeft + this.axesPadding}, ${
+          this.marginTop + this.axesPadding
+        })`,
+      )
+      .append('g')
+      .classed('map', true)
+      .attr('stroke-width', 0.5)
   }
 
   renderAxes() {
     this.chromaticLeftAxisBox = this.svg.append('g')
     this.chromaticRightAxisBox = this.svg.append('g')
-    this.chromaticColor = this.svg.append('rect')
+    this.chromaticColor = this.svg
+      .append('rect')
       .attr('height', 10)
       .attr('x', this.marginLeft + this.axesPadding)
       .attr('y', this.height)
@@ -298,7 +320,7 @@ export class Territory extends BaseChart {
     const sizes = [
       this.marginLeft + this.axesPadding,
       this.marginLeft + this.axesPadding + width * this.meanRatio,
-      this.width - this.marginRight - this.axesPadding - .5,
+      this.width - this.marginRight - this.axesPadding - 0.5,
     ]
     const domain = this.scale.domain()
     const scaleLeft = scaleLinear()
@@ -309,12 +331,7 @@ export class Territory extends BaseChart {
       .attr('transform', `translate(0, ${yPosition})`)
       .interrupt()
       .transition(transition)
-      .call(
-        axisBottom()
-          .scale(scaleLeft)
-          .ticks(5)
-          .tickSizeOuter(0)
-      )
+      .call(axisBottom().scale(scaleLeft).ticks(5).tickSizeOuter(0))
 
     const scaleRight = scaleLinear()
       .range(sizes.slice(1))
@@ -324,12 +341,7 @@ export class Territory extends BaseChart {
       .attr('transform', `translate(0, ${yPosition})`)
       .interrupt()
       .transition(transition)
-      .call(
-        axisBottom()
-          .scale(scaleRight)
-          .ticks(3)
-          .tickSizeOuter(0)
-      )
+      .call(axisBottom().scale(scaleRight).ticks(3).tickSizeOuter(0))
 
     this.chromaticColor
       .interrupt()
@@ -341,27 +353,26 @@ export class Territory extends BaseChart {
 
   updateRegions() {
     this.updatePathBySize()
-    this.map.selectAll('path.region')
+    this.map
+      .selectAll('path.region')
       .data(this.dataset.features, (d) => d.properties.name)
-      .join(
-        (enter) => this._enterRegion(enter),
-      )
+      .join((enter) => this._enterRegion(enter))
       .attr('d', this.geoPath)
   }
 
   resizeRegions() {
-    this.map.selectAll('path.region')
-      .attr('d', this.geoPath)
+    this.map.selectAll('path.region').attr('d', this.geoPath)
   }
 
   _enterRegion(enter) {
     const me = this
     const tooltip = select('#tooltip')
 
-    return enter.append('path')
+    return enter
+      .append('path')
       .classed('region', true)
       .attr('fill', '#d1d1d1')
-      .on('mouseover', function({ properties, stat }) {
+      .on('mouseover', function ({ properties, stat }) {
         let confirmed = '?'
         let recovered = '?'
         let deaths = '?'
@@ -388,11 +399,10 @@ export class Territory extends BaseChart {
           </small>
         `)
       })
-      .on('click', function({ stat }) {
-        me.regionChart.show()
-          .then((regionChart) => {
-            regionChart.setDataset(stat)
-          })
+      .on('click', function ({ stat }) {
+        me.regionChart.show().then((regionChart) => {
+          regionChart.setDataset(stat)
+        })
       })
   }
 
@@ -419,7 +429,8 @@ export class Territory extends BaseChart {
     this.scale = this.scaleDict[type]
     this.updateAxes()
     if (!silent) {
-      this.map.selectAll('path.region')
+      this.map
+        .selectAll('path.region')
         .transition(transition)
         .attr('fill', ({ stat }) => this.getColor(stat[this.type]))
     }
@@ -431,16 +442,19 @@ export class Territory extends BaseChart {
     }
     const date = serverDate(dateTime)
     const none = { confirmed: 0 }
-    this.map.selectAll('path.region')
-      .attr('fill', ({ stat }) => this.getColor(
-        (stat.history.find((item) => item.date === date) || none).confirmed
-      ))
+    this.map
+      .selectAll('path.region')
+      .attr('fill', ({ stat }) =>
+        this.getColor(
+          (stat.history.find((item) => item.date === date) || none).confirmed,
+        ),
+      )
   }
 
   onZoom() {
     this.map
       .attr('transform', event.transform)
-      .attr('stroke-width', .5 / event.transform.k);
+      .attr('stroke-width', 0.5 / event.transform.k)
   }
 }
 

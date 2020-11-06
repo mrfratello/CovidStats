@@ -12,11 +12,10 @@ export default class MapTimelapse {
     this.chart = chart
     this.controls = controls
 
-    dataset.getAll()
-      .then(({ updateDate }) => {
-        this.days = timeDays(START_DAY, updateDate)
-        this.initScrubber()
-      })
+    dataset.getAll().then(({ updateDate }) => {
+      this.days = timeDays(START_DAY, updateDate)
+      this.initScrubber()
+    })
   }
 
   initScrubber() {
@@ -30,11 +29,9 @@ export default class MapTimelapse {
       this.scrubber.stop()
     })
 
-    this.scrubber.addEventListener('input', (e) => {
+    this.scrubber.addEventListener('input', () => {
       this.controls.classed('active', false)
-      this.chart.updateConfirmedHistory(
-        this.scrubber.value,
-      )
+      this.chart.updateConfirmedHistory(this.scrubber.value)
     })
   }
 }

@@ -1,14 +1,13 @@
 import axios from 'axios'
 import { select } from 'd3-selection'
 import { serverToDate, serverShortToDate, cacheDate } from './format/date'
-import {
-  webpackReducer,
-  compose,
-} from './util'
+import { webpackReducer, compose } from './util'
 
 class Dataset {
   location = 'ru'
+
   waiting = null
+
   cache = cacheDate(Date.now())
 
   constructor() {
@@ -18,18 +17,14 @@ class Dataset {
 
   getAll() {
     return !this.waiting
-      ? Promise.reject('Request not started')
+      ? Promise.reject(new Error('Request not started'))
       : this.waiting
   }
 
   request() {
-    const body = select('body')
-      .classed('loaded', false)
+    const body = select('body').classed('loaded', false)
 
-    return Promise.all([
-      this.requestData(),
-      this.requestInfo(),
-    ])
+    return Promise.all([this.requestData(), this.requestInfo()])
       .then(([data, info]) => ({
         data,
         updateDate: info.date,
@@ -41,16 +36,18 @@ class Dataset {
   }
 
   requestData() {
-    return axios.get(`/api/json/history.${this.location}.json`, {
-      params: { cache: this.cache },
-    })
+    return axios
+      .get(`/api/json/history.${this.location}.json`, {
+        params: { cache: this.cache },
+      })
       .then((response) => this.convertHistory(response.data))
   }
 
   requestInfo() {
-    return axios.get(`/api/json/by-territory.${this.location}.json`, {
-      params: { cache: this.cache },
-    })
+    return axios
+      .get(`/api/json/by-territory.${this.location}.json`, {
+        params: { cache: this.cache },
+      })
       .then(({ data }) => ({
         ...data,
         date: serverToDate(data.date),
@@ -65,16 +62,12 @@ class Dataset {
   }
 
   converter() {
-    return compose(
-      this.getPeriodParams,
-      this.getCasesInMoment,
-      this.formatDate
-    )
+    return compose(this.getPeriodParams, this.getCasesInMoment, this.formatDate)
   }
 
   getPeriodParams(data) {
-    return data.reduce(
-      (res, item) => {
+    return data
+      .reduce((res, item) => {
         const prev = res[res.length - 1]
         return [
           ...res,
@@ -85,9 +78,7 @@ class Dataset {
             recoverDay: item.recover - prev.recover,
           },
         ]
-      },
-      data.slice(0, 1),
-    )
+      }, data.slice(0, 1))
       .slice(1)
   }
 

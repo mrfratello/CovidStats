@@ -8,7 +8,7 @@ $h6-font-size: $font-size-base;
 $btn-focus-box-shadow: none;
 $btn-focus-width: 0;
 
-@import "~bootstrap/scss/bootstrap";
+@import '~bootstrap/scss/bootstrap';
 
 $nav-bar-height: 56px;
 
@@ -49,7 +49,6 @@ $nav-bar-height: 56px;
   }
 }
 
-
 #chart,
 #period-offset-chart,
 #region-chart {
@@ -75,7 +74,7 @@ $nav-bar-height: 56px;
   z-index: 100;
   background-color: #ffffff;
 
-  .loaded &{
+  .loaded & {
     display: none;
   }
 
@@ -101,7 +100,7 @@ label {
     width: 100%;
     z-index: 100;
     visibility: hidden;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, .3);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
 
     &.show {
       visibility: visible;
@@ -114,8 +113,8 @@ label {
       font-size: 3rem;
       font-weight: 400;
       text-shadow: none;
-      opacity: .7;
-      margin-top: .5rem;
+      opacity: 0.7;
+      margin-top: 0.5rem;
       margin-right: 1rem;
     }
     h2 {
@@ -124,4 +123,4 @@ label {
   }
 }
 
-@import "./chart.scss";
+@import './chart.scss';

@@ -6,9 +6,13 @@ import Tooltip from '../Tooltip'
 
 export default class Base {
   marginLeft = 30
+
   marginRight = 50
+
   marginBottom = 30
+
   marginTop = 42
+
   svg = null
 
   constructor(id) {
@@ -22,9 +26,13 @@ export default class Base {
       this.onResize()
     }, 400)
 
-    select(window).on(`resize.${id}`, () => { onResize() })
+    select(window).on(`resize.${id}`, () => {
+      onResize()
+    })
     if (window.ResizeObserver) {
-      const resizer = new window.ResizeObserver(() => { onResize() })
+      const resizer = new window.ResizeObserver(() => {
+        onResize()
+      })
       resizer.observe(this.container.node())
     }
     this.tooltip = new Tooltip(this.container)
@@ -44,13 +52,14 @@ export default class Base {
       .attr('viewBox', [0, 0, this.width, this.height])
 
     this.defs = this.svg.append('defs')
-    this.clipPath = this.defs.append('clipPath')
+    this.clipPath = this.defs
+      .append('clipPath')
       .attr('id', `clip-${this.id}`)
       .append('rect')
-        .attr('width', this.innerWidth)
-        .attr('height', this.height)
-        .attr('x', this.marginLeft)
-        .attr('y', 0)
+      .attr('width', this.innerWidth)
+      .attr('height', this.height)
+      .attr('x', this.marginLeft)
+      .attr('y', 0)
   }
 
   initZoom() {
@@ -63,7 +72,7 @@ export default class Base {
       .scaleExtent([1, 5])
       .translateExtent(extent)
       .extent(extent)
-      .on(`zoom.${this.id}`, function() {
+      .on(`zoom.${this.id}`, function () {
         me.onZoom()
       })
 
@@ -75,9 +84,7 @@ export default class Base {
       [this.marginLeft, this.marginTop],
       [this.width - this.marginRight, this.height - this.marginBottom],
     ]
-    this.zoom
-      .translateExtent(extent)
-      .extent(extent)
+    this.zoom.translateExtent(extent).extent(extent)
   }
 
   resetZoom() {
@@ -105,5 +112,6 @@ export default class Base {
       .attr('x', this.marginLeft)
   }
 
+  // eslint-disable-next-line class-methods-use-this
   onZoom() {}
 }

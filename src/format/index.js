@@ -6,5 +6,18 @@ import timeLocale from 'd3-time-format/locale/ru-RU'
 formatDefaultLocale(numberLocale)
 timeFormatDefaultLocale({
   ...timeLocale,
-  shortMonths: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
+  shortMonths: [
+    'Янв',
+    'Фев',
+    'Мар',
+    'Апр',
+    'Май',
+    'Июн',
+    'Июл',
+    'Авг',
+    'Сен',
+    'Окт',
+    'Ноя',
+    'Дек',
+  ],
 })

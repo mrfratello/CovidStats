@@ -11,9 +11,13 @@ const int = format(',d')
 
 export default class RegionChart extends BaseChart {
   marginTop = 18
+
   maxTickWidth = 35
+
   history = []
+
   suffix = 'Inc'
+
   _didSet = false
 
   constructor(selector) {
@@ -26,8 +30,9 @@ export default class RegionChart extends BaseChart {
     this.title = this.box.select('.region-title')
     this.description = this.box.select('.region-description')
 
-    this.popup.select('.close')
-      .on('click', () => { this.hide() })
+    this.popup.select('.close').on('click', () => {
+      this.hide()
+    })
 
     this.renderAxes()
     this.renderBars()
@@ -38,16 +43,15 @@ export default class RegionChart extends BaseChart {
   }
 
   renderAxes() {
-    this.countAxis = axisRight()
-      .tickSizeOuter(0)
-    this.countAxisBox = this.svg.append('g')
+    this.countAxis = axisRight().tickSizeOuter(0)
+    this.countAxisBox = this.svg
+      .append('g')
       .classed('count_axis', true)
       .attr('transform', `translate(${this.marginLeft + this.innerWidth}, 0)`)
 
-    this.timeAxis = axisBottom()
-      .tickSize(0)
-      .tickPadding(10)
-    this.timeAxisBox = this.svg.append('g')
+    this.timeAxis = axisBottom().tickSize(0).tickPadding(10)
+    this.timeAxisBox = this.svg
+      .append('g')
       .classed('time_axis', true)
       .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
   }
@@ -61,18 +65,18 @@ export default class RegionChart extends BaseChart {
       .attr('transform', `translate(${this.marginLeft + this.innerWidth}, 0)`)
       .call(this.countAxis)
 
-    const tickTextOverBars = Math.ceil(this.maxTickWidth / this.timeScale.bandwidth())
+    const tickTextOverBars = Math.ceil(
+      this.maxTickWidth / this.timeScale.bandwidth(),
+    )
     const dataLength = this.history.length
     const ticksTime = Math.floor(dataLength / tickTextOverBars)
     const divisorTime = Math.ceil(dataLength / ticksTime)
 
     this.timeAxis
       .scale(this.timeScale)
-      .tickFormat((value, i) => (
-        (dataLength - i - 1) % divisorTime
-          ? ''
-          : value
-      ))
+      .tickFormat((value, i) =>
+        (dataLength - i - 1) % divisorTime ? '' : value,
+      )
     this.timeAxisBox
       .interrupt()
       .transition(transition)
@@ -81,10 +85,12 @@ export default class RegionChart extends BaseChart {
   }
 
   renderBars() {
-    this.overBars = this.svg.append('g')
+    this.overBars = this.svg
+      .append('g')
       .attr('clip-path', `url(#clip-${this.id})`)
 
-    this.confirmedBars = this.svg.append('g')
+    this.confirmedBars = this.svg
+      .append('g')
       .classed('cases', true)
       .attr('clip-path', `url(#clip-${this.id})`)
   }
@@ -111,7 +117,9 @@ export default class RegionChart extends BaseChart {
   show() {
     this.popup.classed('show', true)
     return new Promise((resolve) => {
-      setTimeout(() => { resolve(this) }, 400)
+      setTimeout(() => {
+        resolve(this)
+      }, 400)
     })
   }
 
@@ -121,18 +129,31 @@ export default class RegionChart extends BaseChart {
 
   renderData(data) {
     this.title.html(data.territoryName)
-    this.description
-      .classed('text-center', false)
-      .html(`
-        <span class="cases">${this.getTooltipValue(data, 'confirmed')}</span>&nbsp;
-        <span class="recover">${this.getTooltipValue(data, 'recovered')}</span>&nbsp;
-        <span class="deaths">${this.getTooltipValue(data, 'deaths')}</span>&nbsp;
+    this.description.classed('text-center', false).html(`
+        <span class="cases">${this.getTooltipValue(
+          data,
+          'confirmed',
+        )}</span>&nbsp;
+        <span class="recover">${this.getTooltipValue(
+          data,
+          'recovered',
+        )}</span>&nbsp;
+        <span class="deaths">${this.getTooltipValue(
+          data,
+          'deaths',
+        )}</span>&nbsp;
         <br>
         <small>
           На каждые 100 000 человек приходится
-          <span class="cases"><strong>${this.getTooltipValue(data, 'confirmedRelative')}</strong> заразившихся</span>
+          <span class="cases"><strong>${this.getTooltipValue(
+            data,
+            'confirmedRelative',
+          )}</strong> заразившихся</span>
           и
-          <span class="deaths"><strong>${this.getTooltipValue(data, 'deathsRelative')}</strong> умерших</span>
+          <span class="deaths"><strong>${this.getTooltipValue(
+            data,
+            'deathsRelative',
+          )}</strong> умерших</span>
         </small>
       `)
   }
@@ -162,13 +183,17 @@ export default class RegionChart extends BaseChart {
   }
 
   calculateMax() {
-    this.maxCount = max(this.history.map((item) => item[`confirmed${this.suffix}`]))
+    this.maxCount = max(
+      this.history.map((item) => item[`confirmed${this.suffix}`]),
+    )
     this.maxInc = max(this.history, (d) => d.confirmedInc)
   }
 
   initScales() {
-    this.countScale = scaleLinear()
-      .range([this.height - this.marginBottom, this.marginTop])
+    this.countScale = scaleLinear().range([
+      this.height - this.marginBottom,
+      this.marginTop,
+    ])
     this.timeScale = scaleBand()
       .padding(0.1)
       .range([this.marginLeft, this.width - this.marginRight])
@@ -178,15 +203,15 @@ export default class RegionChart extends BaseChart {
     this.countScale.domain([0, this.maxCount])
     this.timeScale.domain(this.history.map((item) => item.date))
   }
+
   updateRanges() {
-    this.countScale
-      .range([this.height - this.marginBottom, this.marginTop])
-    this.timeScale
-      .range([this.marginLeft, this.width - this.marginRight])
+    this.countScale.range([this.height - this.marginBottom, this.marginTop])
+    this.timeScale.range([this.marginLeft, this.width - this.marginRight])
   }
 
   updateBars() {
-    this.overBars.selectAll('.overBar')
+    this.overBars
+      .selectAll('.overBar')
       .data(this.history, ({ date }) => date)
       .join(
         (enter) => this._enterOvers(enter),
@@ -197,38 +222,43 @@ export default class RegionChart extends BaseChart {
       .attr('y', () => this.countScale.range()[1])
       .attr('height', () => this.innerHeight)
 
-    this.confirmedBars.selectAll('.caseBar')
+    this.confirmedBars
+      .selectAll('.caseBar')
       .data(this.history, ({ date }) => date)
       .join(
         (enter) => this._enterCases(enter),
         (update) => update,
-        (exit) => exit
-          .transition(transition)
-          .attr('y', () => this.countScale.range()[0])
-          .attr('height', 0)
-          .remove()
+        (exit) =>
+          exit
+            .transition(transition)
+            .attr('y', () => this.countScale.range()[0])
+            .attr('height', 0)
+            .remove(),
       )
       .transition(transition)
       .call(this._updateBars.bind(this))
       .attr('y', (item) => this.countScale(item[`confirmed${this.suffix}`]))
-      .attr('height', (item) => this.countScale(0) - this.countScale(item[`confirmed${this.suffix}`]))
+      .attr(
+        'height',
+        (item) =>
+          this.countScale(0) - this.countScale(item[`confirmed${this.suffix}`]),
+      )
       .style('fill', (item) => casesColor(item.confirmedInc / this.maxInc))
   }
 
   zoomBars() {
-    this.overBars.selectAll('.overBar')
-      .call(this._updateBars.bind(this))
+    this.overBars.selectAll('.overBar').call(this._updateBars.bind(this))
 
-    this.confirmedBars.selectAll('.caseBar')
-      .call(this._updateBars.bind(this))
+    this.confirmedBars.selectAll('.caseBar').call(this._updateBars.bind(this))
   }
 
   _enterOvers(enter) {
     const me = this
 
-    return enter.append('rect')
+    return enter
+      .append('rect')
       .classed('overBar', true)
-      .on('mouseover', function(data, index) {
+      .on('mouseover', function (data, index) {
         const rect = select(this)
         const history = me.getHistory()
         me.tooltip.show({
@@ -237,12 +267,11 @@ export default class RegionChart extends BaseChart {
             recover: null,
             deaths: null,
           },
-          right: index > history.length / 2
-            ? me.width - (+rect.attr('x') + +rect.attr('width')) + 'px'
-            : 'auto',
-          left: index <= history.length / 2
-            ? rect.attr('x') + 'px'
-            : 'auto',
+          right:
+            index > history.length / 2
+              ? `${me.width - (+rect.attr('x') + +rect.attr('width'))  }px`
+              : 'auto',
+          left: index <= history.length / 2 ? `${rect.attr('x')  }px` : 'auto',
         })
       })
       .on('mouseout', () => {
@@ -251,7 +280,8 @@ export default class RegionChart extends BaseChart {
   }
 
   _enterCases(enter) {
-    return enter.append('rect')
+    return enter
+      .append('rect')
       .classed('caseBar', true)
       .attr('x', ({ date }) => this.timeScale(date))
       .attr('y', () => this.countScale.range()[0])
@@ -274,9 +304,7 @@ export default class RegionChart extends BaseChart {
   }
 
   setType(type) {
-    this.suffix = type === 'full'
-      ? ''
-      : 'Inc'
+    this.suffix = type === 'full' ? '' : 'Inc'
 
     this.calculateMax()
     this.updateDomains()
@@ -286,8 +314,9 @@ export default class RegionChart extends BaseChart {
 
   onZoom() {
     if (this._didSet) {
-      const range = [this.marginLeft, this.width - this.marginRight]
-        .map((d) => event.transform.applyX(d))
+      const range = [this.marginLeft, this.width - this.marginRight].map((d) =>
+        event.transform.applyX(d),
+      )
       this.timeScale.range(range)
       this.timeAxisBox.call(this.timeAxis)
 

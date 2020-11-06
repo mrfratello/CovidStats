@@ -1,21 +1,26 @@
 const path = require('path')
+const fs = require('fs')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ESLintPlugin = require('eslint-webpack-plugin')
+const pages = ['index', 'map']
+const metrika = fs.readFileSync('./src/metrika.html')
 
 module.exports = (env) => {
   const production = env && env.production
 
   return {
-    mode: production
-      ? 'production'
-      : 'development',
-    entry: {
-      index: './src/index.js',
-      map: './src/map.js',
-    },
+    mode: production ? 'production' : 'development',
+    entry: pages.reduce(
+      (entry, page) => ({
+        ...entry,
+        [page]: `./src/${page}.js`,
+      }),
+      {},
+    ),
     output: {
       path: path.resolve(__dirname, './dist'),
-      filename: '[name].build.js'
+      filename: '[name].build.js',
     },
     optimization: {
       splitChunks: {
@@ -38,7 +43,7 @@ module.exports = (env) => {
                 plugins: () => [require('autoprefixer')],
               },
             },
-            'sass-loader'
+            'sass-loader',
           ],
         },
         {
@@ -48,31 +53,34 @@ module.exports = (env) => {
         },
         {
           test: /\.(png|jpg|gif)$/,
-          use: [{
+          use: [
+            {
               loader: 'file-loader',
               options: {
-                  outputPath: "images"
-              }
-          }],
+                outputPath: 'images',
+              },
+            },
+          ],
         },
       ],
     },
     plugins: [
-      new HtmlWebpackPlugin({
-        filename: 'index.html',
-        template: path.resolve(__dirname, './src/index.html'),
-        hash: true,
-        chunks: ['index'],
-      }),
-      new HtmlWebpackPlugin({
-        filename: 'map.html',
-        template: path.resolve(__dirname, './src/map.html'),
-        hash: true,
-        chunks: ['map'],
-      }),
+      ...pages.map(
+        (page) =>
+          new HtmlWebpackPlugin({
+            filename: `${page}.html`,
+            template: path.resolve(__dirname, `./src/${page}.html`),
+            hash: true,
+            chunks: [page],
+            metrika,
+          }),
+      ),
       new MiniCssExtractPlugin({
-        filename: '[name].css'
-      })
+        filename: '[name].css',
+      }),
+      new ESLintPlugin({
+        emitWarning: true,
+      }),
     ],
     devServer: {
       contentBase: path.resolve(__dirname, './dist'),
@@ -80,12 +88,12 @@ module.exports = (env) => {
       host: '0.0.0.0',
       proxy: {
         '/api': {
-            target: 'http://localhost:8000',
-            secure: false,
-            changeOrigin: true,
-            logLevel: 'debug',
+          target: 'http://localhost:8000',
+          secure: false,
+          changeOrigin: true,
+          logLevel: 'debug',
         },
       },
-    }
+    },
   }
 }
