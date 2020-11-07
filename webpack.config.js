@@ -3,6 +3,7 @@ const fs = require('fs')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ESLintPlugin = require('eslint-webpack-plugin')
+const StylelintPlugin = require('stylelint-webpack-plugin')
 const pages = ['index', 'map']
 const metrika = fs.readFileSync('./src/metrika.html')
 
@@ -80,6 +81,10 @@ module.exports = (env) => {
       }),
       new ESLintPlugin({
         emitWarning: true,
+      }),
+      new StylelintPlugin({
+        emitWarning: true,
+        fix: true,
       }),
     ],
     devServer: {

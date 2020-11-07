@@ -66,13 +66,14 @@ $nav-bar-height: 56px;
     left: 0;
   }
 }
+
 .loading {
   position: absolute;
   display: table;
   height: 100%;
   width: 100%;
   z-index: 100;
-  background-color: #ffffff;
+  background-color: #fff;
 
   .loaded & {
     display: none;
@@ -105,6 +106,7 @@ label {
     &.show {
       visibility: visible;
     }
+
     .close {
       float: none;
       position: absolute;
@@ -117,6 +119,7 @@ label {
       margin-top: 0.5rem;
       margin-right: 1rem;
     }
+
     h2 {
       margin-right: 2rem;
     }

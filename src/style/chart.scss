@@ -1,6 +1,6 @@
-$cases-color: #ffcc33;
-$recover-color: #33cc99;
-$deaths-color: #ff6666;
+$cases-color: #fc3;
+$recover-color: #3c9;
+$deaths-color: #f66;
 
 #chart {
   position: relative;
@@ -12,6 +12,7 @@ $deaths-color: #ff6666;
     font-size: 10px;
     font-style: italic;
   }
+
   .overBar {
     fill: transparent;
 
@@ -60,9 +61,11 @@ $deaths-color: #ff6666;
   .cases {
     color: $cases-color;
   }
+
   .recover {
     color: $recover-color;
   }
+
   .deaths {
     color: $deaths-color;
   }
@@ -78,6 +81,7 @@ $deaths-color: #ff6666;
 
 .territory-chart {
   $territory-stroke-color: #4693c8;
+
   position: relative;
   min-height: 300px;
   flex-grow: 1;
@@ -110,6 +114,7 @@ $deaths-color: #ff6666;
 
 .map-tooltip {
   $line: 1.3rem;
+
   height: 4 * $line;
   line-height: $line;
 }
@@ -123,9 +128,11 @@ $deaths-color: #ff6666;
   .cases {
     color: $cases-color;
   }
+
   .recover {
     color: $recover-color;
   }
+
   .deaths {
     color: $deaths-color;
   }
