@@ -14,5 +14,32 @@ module.exports = {
     'func-names': ['warn', 'never'],
     'class-methods-use-this': ['off'],
     'no-underscore-dangle': ['off'],
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      {
+        js: 'never',
+        ts: 'never',
+      },
+    ],
+  },
+  overrides: [
+    {
+      files: ['**/*.ts'],
+      extends: [
+        'plugin:@typescript-eslint/recommended',
+        'prettier',
+        'prettier/@typescript-eslint',
+      ],
+      parser: '@typescript-eslint/parser',
+      plugins: ['@typescript-eslint'],
+    },
+  ],
+  settings: {
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.ts'],
+      },
+    },
   },
 }

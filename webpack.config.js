@@ -30,6 +30,9 @@ module.exports = (env) => {
         minChunks: 2,
       },
     },
+    resolve: {
+      extensions: ['.wasm', '.mjs', '.ts', '.js', '.json'],
+    },
     module: {
       rules: [
         {
@@ -48,7 +51,7 @@ module.exports = (env) => {
           ],
         },
         {
-          test: /\.js$/,
+          test: /\.(ts|js)$/,
           exclude: /node_modules/,
           use: 'babel-loader',
         },
@@ -81,6 +84,7 @@ module.exports = (env) => {
       }),
       new ESLintPlugin({
         emitWarning: true,
+        extensions: ['js', 'ts'],
       }),
       new StylelintPlugin({
         emitWarning: true,
@@ -93,7 +97,7 @@ module.exports = (env) => {
       host: '0.0.0.0',
       proxy: {
         '/api': {
-          target: 'http://localhost:8000',
+          target: 'http://[::1]:8000',
           secure: false,
           changeOrigin: true,
           logLevel: 'debug',

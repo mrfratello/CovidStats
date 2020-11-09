@@ -1,17 +1,23 @@
+import type { EnrichHistory, HistoryDay, HistoryMoment } from './types'
+
 export const ALL_TYPE = 'all'
 export const PERIOD_TYPE = 'period'
 export const ALL_SICKS_TYPE = 'allSicks'
 
+type TProp = 'cases' | 'recover' | 'deaths'
+
 export const valueByType = {
-  [ALL_TYPE]: (prop, item) => item[prop],
-  [PERIOD_TYPE]: (prop, item) => item[`${prop}Day`],
-  [ALL_SICKS_TYPE]: (prop, item) => item[`${prop}Moment`],
+  [ALL_TYPE]: (prop: TProp, item: EnrichHistory): number => item[prop],
+  [PERIOD_TYPE]: (prop: TProp, item: EnrichHistory): number =>
+    item[`${prop}Day` as keyof HistoryDay],
+  [ALL_SICKS_TYPE]: (prop: TProp, item: EnrichHistory): number =>
+    item[`${prop}Moment` as keyof HistoryMoment],
 }
 
 export const DYNAMIC_TYPE = 'dynamic'
 export const TOTAL_TYPE = 'total'
 
-export const OFFSET_VALUES = {
+export const OFFSET_VALUES: Record<number, string> = {
   13: '2 недели',
   14: '15 дней',
   15: '16 дней',
