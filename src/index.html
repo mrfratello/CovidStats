@@ -85,13 +85,6 @@
           >
             Общее количество
           </button>
-          <button
-            type="button"
-            class="chartTypeBtn btn btn-info"
-            data-value="allSicks"
-          >
-            Активные больные
-          </button>
         </div>
       </div>
       <div class="container content">
@@ -105,40 +98,37 @@
           <strong>за каждый день</strong>. Отображаются только новые случаи за
           соответствующий день. График позволит увидеть пик заражения и её спад.
         </p>
-        <p class="typeDescription" data-type="allSicks">
-          Показано <strong>количество больных</strong> короновирусной инфекцией
-          <strong>на конкретный день</strong>. Человек перестает быть больным,
-          когда он вылечился или умер от болезни. Эта динамика аналогия
-          загруженности медицинской системы.
-        </p>
       </div>
       <p>
         <a class="go-to-chart" href="#offset-chart">График со смещением ↓</a>
       </p>
     </div>
     <div id="offset-chart" class="container-fluid screen d-flex flex-column">
-      <h2>Динамика новых случаев со смещением</h2>
+      <h2>График с учетом погрешности в статистике</h2>
       <div class="container content">
         <p>
-          Согласно новостям из СМИ, период болезни составляет две недели. Можно
-          предположить, что заразившийся 11 марта попадет в число вылечившихся
-          25 марта. На графике можно грубо оценить продолжительность активной
-          болезни.
+          Предполагается наличие вылечившихся людей, которые не попали в
+          официальную статистику. То есть их зарегистрировали в качественно
+          зараженных, но факт их выздоровления не был зафиксирован.
+        </p>
+        <p>
+          Регулятор доли неучтенных вылечившихся позволяет настроить адекватную
+          динамику активных больных и продолжительность болезни.
         </p>
       </div>
       <div class="container">
         <div class="form-group">
-          <label for="periodOffsetChartOffset"
-            >Смещение на <em>3 недели</em></label
+          <label for="lossPercentChartOffset"
+            >Доля неучтенных вылечившихся <em>10%</em></label
           >
           <input
-            id="periodOffsetChartOffset"
+            id="lossPercentChartOffset"
             type="range"
-            class="form-control-range periodOffsetChartOffset"
-            min="13"
-            max="27"
+            class="form-control-range lossPercentChartOffset"
+            min="0"
+            max="30"
             step="1"
-            value="20"
+            value="10"
           />
         </div>
       </div>
@@ -152,18 +142,32 @@
           <button
             type="button"
             class="periodOffsetChartTypeBtn btn btn-info active"
-            data-value="total"
+            data-value="activePatients"
           >
-            Нарастающим итогом
+            Активные больные
           </button>
           <button
             type="button"
             class="periodOffsetChartTypeBtn btn btn-info"
-            data-value="dynamic"
+            data-value="recoveryPeriod"
           >
-            Ежедневная динамика
+            Длительность болезни
           </button>
         </div>
+      </div>
+      <div class="container content">
+        <p class="offsetTypeDescription active" data-type="activePatients">
+          <strong>Количество больных</strong> короновирусной инфекцией
+          <strong>на конкретный день</strong>. Человек перестает быть больным,
+          когда он вылечился или умер от болезни. График можно интерпретировать
+          как загруженность медицинской системы.
+        </p>
+        <p class="offsetTypeDescription" data-type="recoveryPeriod">
+          Согласно новостям из СМИ, <strong>период болезни</strong> составляет
+          <strong>14 дней</strong>. На графике период болезни вычислено как
+          количество дней, когда число зараженных текущего дня стало меньше
+          суммы вылечившихся и умерших.
+        </p>
       </div>
     </div>
     <h3 class="text-center">Комментарии</h3>

@@ -2,7 +2,6 @@ import { selectAll, select } from 'd3-selection'
 import './format'
 import './ui/navbar'
 import './ui/scrollLink'
-import { OFFSET_VALUES } from './constants'
 import SimpleChart from './chart/Simple'
 import PeriodChart from './chart/PeriodOffset'
 import './style/main.scss'
@@ -34,22 +33,17 @@ selectAll('.periodOffsetChartTypeBtn').on('click', function () {
   selectAll('.periodOffsetChartTypeBtn').each(function () {
     select(this).classed('active', this.dataset.value === chartType)
   })
+  selectAll('.offsetTypeDescription').each(function () {
+    select(this).classed('active', this.dataset.type === chartType)
+  })
   periodChart.onUpdateType(chartType)
 })
 
-selectAll('.periodOffsetChartOffsetBtn').on('click', function () {
-  const chartOffset = this.dataset.value
-  selectAll('.periodOffsetChartOffsetBtn').each(function () {
-    select(this).classed('active', this.dataset.value === chartOffset)
-  })
-  periodChart.onUpdateOffset(chartOffset)
-})
-
-const offsetLabel = select('label[for=periodOffsetChartOffset]')
-select('.periodOffsetChartOffset')
+const offsetLabel = select('label[for=lossPercentChartOffset]')
+select('.lossPercentChartOffset')
   .on('change', function () {
-    periodChart.onUpdateOffset(+this.value)
+    periodChart.onUpdateLossPercent(+this.value)
   })
   .on('input', function () {
-    offsetLabel.html(`Смещение на <em>${OFFSET_VALUES[this.value]}</em>`)
+    offsetLabel.html(`Доля неучтенных вылечившихся <em>${this.value}%</em>`)
   })

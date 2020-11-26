@@ -28,3 +28,9 @@ export interface InfoData {
   date: string
   items: Array<Record<string, unknown>>
 }
+
+export interface Data {
+  updateDate: string
+  data: EnrichHistory[]
+  regions: InfoData['items']
+}

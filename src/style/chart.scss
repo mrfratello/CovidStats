@@ -71,7 +71,8 @@ $deaths-color: #f66;
   }
 }
 
-.typeDescription {
+.typeDescription,
+.offsetTypeDescription {
   display: none;
 
   &.active {
