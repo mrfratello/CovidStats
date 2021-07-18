@@ -4,6 +4,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ESLintPlugin = require('eslint-webpack-plugin')
 const StylelintPlugin = require('stylelint-webpack-plugin')
+const version = require('./package.json').version
 const pages = ['index', 'map']
 const metrika = fs.readFileSync('./src/metrika.html')
 
@@ -77,6 +78,7 @@ module.exports = (env) => {
             hash: true,
             chunks: [page],
             metrika,
+            version,
           }),
       ),
       new MiniCssExtractPlugin({

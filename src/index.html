@@ -17,6 +17,9 @@
           <a class="nav-item nav-link" href="/map.html">Карта</a>
         </div>
       </div>
+      <span class="navbar-text d-none d-md-block"
+        >v.<%= htmlWebpackPlugin.options.version %></span
+      >
     </nav>
     <div class="container-fluid screen screen_top">
       <div class="container content">
@@ -126,7 +129,7 @@
             type="range"
             class="form-control-range lossPercentChartOffset"
             min="0"
-            max="30"
+            max="25"
             step="1"
             value="10"
           />

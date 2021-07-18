@@ -6,6 +6,7 @@ import { scaleBand, scaleLinear } from 'd3-scale'
 import type { ScaleLinear, ScaleBand } from 'd3-scale'
 import { axisRight, axisBottom } from 'd3-axis'
 import type { Axis } from 'd3-axis'
+import { humanInt } from '../format/number'
 import { shortDate } from '../format/date'
 import dataset from '../Dataset'
 import transition from '../transition'
@@ -137,7 +138,7 @@ export class PeriodOffset extends BaseChart {
   }
 
   private renderAxes(): void {
-    this.countAxis.tickSizeOuter(0)
+    this.countAxis.tickSizeOuter(0).tickFormat(humanInt)
 
     this.countAxisBox = (this.svg as Selection<
       SVGSVGElement,
@@ -163,10 +164,15 @@ export class PeriodOffset extends BaseChart {
   private updateAxes(): void {
     this.countAxis.scale(this.countScale)
 
-    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    this.countAxisBox!.transition(transition as any)
-      .attr('transform', `translate(${this.marginLeft + this.innerWidth!}, 0)`)
-      .call(this.countAxis)
+    if (this.countAxisBox) {
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+      this.countAxisBox!.transition(transition as any)
+        .attr(
+          'transform',
+          `translate(${this.marginLeft + this.innerWidth!}, 0)`,
+        )
+        .call(this.countAxis)
+    }
 
     const tickTextOverBars = Math.ceil(
       this.maxTickWidth / this.timeScale.bandwidth(),
@@ -180,10 +186,13 @@ export class PeriodOffset extends BaseChart {
       .tickFormat((value, i) =>
         (dataLength - i - 1) % divisorTime ? '' : value,
       )
-    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    this.timeAxisBox!.transition(transition as any)
-      .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
-      .call(this.timeAxis)
+    if (this.timeAxisBox) {
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+      this.timeAxisBox
+        .transition(transition as any)
+        .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
+        .call(this.timeAxis)
+    }
   }
 
   private renderBars(): void {
@@ -206,51 +215,66 @@ export class PeriodOffset extends BaseChart {
   }
 
   private updateBars(): void {
-    this.overBars!.selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
-      .data(this.dataset, ({ date }) => date)
-      .join(
-        (enter) => this._enterOvers(enter),
-        (update) => update,
-        (exit) => exit.remove(),
-      )
-      .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-      .attr('width', this.timeScale.bandwidth())
-      .attr('y', () => this.countScale.range()[1])
-      .attr('height', this.innerHeight!)
+    if (this.overBars) {
+      this.overBars
+        .selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
+        .data(this.dataset, ({ date }) => date)
+        .join(
+          (enter) => this._enterOvers(enter),
+          (update) => update,
+          (exit) => exit.remove(),
+        )
+        .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
+        .attr('width', this.timeScale.bandwidth())
+        .attr('y', () => this.countScale.range()[1])
+        .attr('height', this.innerHeight!)
+    }
 
-    this.offsets!.selectAll<SVGRectElement, PeriodOffsetItem>('.caseBar')
-      .data(this.dataset, ({ date }) => date)
-      .join(
-        (enter) => this._enterCases(enter),
-        (update) => update,
-        (exit) =>
-          exit
-            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-            .transition(transition as any)
-            .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? 0 + 100)
-            .remove(),
-      )
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-      .transition(transition as any)
-      .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-      .attr('width', this.timeScale.bandwidth())
-      .attr('y', (item) => this.countScale(item[this.type]))
-      .attr(
-        'height',
-        (item) => this.countScale(0) - this.countScale(item[this.type]),
-      )
+    if (this.offsets) {
+      this.offsets
+        .selectAll<SVGRectElement, PeriodOffsetItem>('.caseBar')
+        .data(this.dataset, ({ date }) => date)
+        .join(
+          (enter) => this._enterCases(enter),
+          (update) => update,
+          (exit) =>
+            exit
+              // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+              .transition(transition as any)
+              .attr(
+                'x',
+                ({ date }) => this.timeScale(shortDate(date)) ?? 0 + 100,
+              )
+              .remove(),
+        )
+        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+        .transition(transition as any)
+        .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
+        .attr('width', this.timeScale.bandwidth())
+        .attr('y', (item) => this.countScale(item[this.type]))
+        .attr(
+          'height',
+          (item) => this.countScale(0) - this.countScale(item[this.type]),
+        )
+    }
   }
 
   private zoomBars(): void {
     const bandWidth = this.timeScale.bandwidth()
 
-    this.overBars!.selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
-      .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-      .attr('width', this.timeScale.bandwidth())
+    if (this.overBars) {
+      this.overBars
+        .selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
+        .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
+        .attr('width', this.timeScale.bandwidth())
+    }
 
-    this.offsets!.selectAll<SVGRectElement, PeriodOffsetItem>('.caseBar')
-      .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-      .attr('width', bandWidth)
+    if (this.offsets) {
+      this.offsets
+        .selectAll<SVGRectElement, PeriodOffsetItem>('.caseBar')
+        .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
+        .attr('width', bandWidth)
+    }
   }
 
   private _enterOvers(enter: TBarEnterSelection): TBarSelection {
@@ -323,7 +347,9 @@ export class PeriodOffset extends BaseChart {
       event.transform.applyX(d),
     )
     this.timeScale.range(range)
-    this.timeAxisBox!.call(this.timeAxis)
+    if (this.timeAxisBox) {
+      this.timeAxisBox.call(this.timeAxis)
+    }
     this.zoomBars()
   }
 }
