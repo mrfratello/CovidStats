@@ -69,11 +69,11 @@ export default class Base {
       [this.width - this.marginRight, this.height - this.marginBottom],
     ]
     this.zoom = zoom()
-      .scaleExtent([1, 5])
+      .scaleExtent([1, 1])
       .translateExtent(extent)
       .extent(extent)
-      .on(`zoom.${this.id}`, function () {
-        me.onZoom()
+      .on(`zoom.${this.id}`, function (event) {
+        me.onZoom(event)
       })
 
     this.svg.call(this.zoom)
@@ -112,6 +112,6 @@ export default class Base {
       .attr('x', this.marginLeft)
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  onZoom() {}
+  // eslint-disable-next-line class-methods-use-this, no-unused-vars
+  onZoom(event) {} // TODO make abstruct method
 }

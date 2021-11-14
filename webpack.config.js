@@ -99,7 +99,8 @@ module.exports = (env) => {
       host: '0.0.0.0',
       proxy: {
         '/api': {
-          target: 'http://[::1]:8000',
+          // target: 'http://[::1]:8000',
+          target: 'https://covid.syomochkin.xyz',
           secure: false,
           changeOrigin: true,
           logLevel: 'debug',

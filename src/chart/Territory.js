@@ -1,7 +1,8 @@
+import 'd3-transition'
 import axios from 'axios'
 import isMobile from 'ismobilejs'
 import { max, mean } from 'd3-array'
-import { select, event } from 'd3-selection'
+import { select } from 'd3-selection'
 import { scaleDiverging, scaleLinear } from 'd3-scale'
 import { axisBottom } from 'd3-axis'
 import { geoPath, geoMercator } from 'd3-geo'
@@ -11,9 +12,9 @@ import {
   interpolateReds,
 } from 'd3-scale-chromatic'
 import { format } from 'd3-format'
-import transition from '../transition'
 import dataset from '../Dataset'
 import { serverDate } from '../format/date'
+import { humanInt } from '../format/number'
 import BaseChart from './Base'
 
 const int = format(',d')
@@ -330,8 +331,14 @@ export class Territory extends BaseChart {
     this.chromaticLeftAxisBox
       .attr('transform', `translate(0, ${yPosition})`)
       .interrupt()
-      .transition(transition)
-      .call(axisBottom().scale(scaleLeft).ticks(5).tickSizeOuter(0))
+      .transition('base')
+      .call(
+        axisBottom()
+          .scale(scaleLeft)
+          .ticks(5)
+          .tickSizeOuter(0)
+          .tickFormat(humanInt),
+      )
 
     const scaleRight = scaleLinear()
       .range(sizes.slice(1))
@@ -340,12 +347,18 @@ export class Territory extends BaseChart {
     this.chromaticRightAxisBox
       .attr('transform', `translate(0, ${yPosition})`)
       .interrupt()
-      .transition(transition)
-      .call(axisBottom().scale(scaleRight).ticks(3).tickSizeOuter(0))
+      .transition('base')
+      .call(
+        axisBottom()
+          .scale(scaleRight)
+          .ticks(3)
+          .tickSizeOuter(0)
+          .tickFormat(humanInt),
+      )
 
     this.chromaticColor
       .interrupt()
-      .transition(transition)
+      .transition('base')
       .attr('y', yPosition - 10)
       .attr('width', width)
       .attr('fill', `url(#${this.type}Gradient)`)
@@ -372,7 +385,7 @@ export class Territory extends BaseChart {
       .append('path')
       .classed('region', true)
       .attr('fill', '#d1d1d1')
-      .on('mouseover', function ({ properties, stat }) {
+      .on('mouseover', function (_event, { properties, stat }) {
         let confirmed = '?'
         let recovered = '?'
         let deaths = '?'
@@ -399,7 +412,7 @@ export class Territory extends BaseChart {
           </small>
         `)
       })
-      .on('click', function ({ stat }) {
+      .on('click', function (_event, { stat }) {
         me.regionChart.show().then((regionChart) => {
           regionChart.setDataset(stat)
         })
@@ -431,7 +444,7 @@ export class Territory extends BaseChart {
     if (!silent) {
       this.map
         .selectAll('path.region')
-        .transition(transition)
+        .transition('base')
         .attr('fill', ({ stat }) => this.getColor(stat[this.type]))
     }
   }
@@ -451,7 +464,7 @@ export class Territory extends BaseChart {
       )
   }
 
-  onZoom() {
+  onZoom(event) {
     this.map
       .attr('transform', event.transform)
       .attr('stroke-width', 0.5 / event.transform.k)

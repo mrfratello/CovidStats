@@ -1,37 +1,37 @@
-import { select, event } from 'd3-selection'
-import type { Selection, EnterElement } from 'd3-selection'
 import 'd3-transition'
+import { select } from 'd3-selection'
 import { max } from 'd3-array'
-import { scaleBand, scaleLinear } from 'd3-scale'
-import type { ScaleLinear, ScaleBand } from 'd3-scale'
 import { axisRight, axisBottom } from 'd3-axis'
+import { scaleBand, scaleLinear } from 'd3-scale'
+import type { Selection, EnterElement } from 'd3-selection'
 import type { Axis } from 'd3-axis'
+import type { ScaleLinear, ScaleBand } from 'd3-scale'
+import type { D3ZoomEvent } from 'd3-zoom'
 import { humanInt } from '../format/number'
 import { shortDate } from '../format/date'
 import dataset from '../Dataset'
-import transition from '../transition'
 import BaseChart from './Base'
 
 import type { History, EnrichHistory } from '../types'
 
 interface PeriodOffsetItem {
-  date: string
+  date: Date
   recoveryPeriod: number
   activePatients: number
 }
 
-type TGroupBarSelection = Selection<SVGGElement, undefined, null, undefined>
+type TGroupBarSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>
 type TBarSelection = Selection<
   SVGRectElement,
   PeriodOffsetItem,
   SVGGElement,
-  undefined
+  unknown
 >
 type TBarEnterSelection = Selection<
   EnterElement,
   PeriodOffsetItem,
   SVGGElement,
-  undefined
+  unknown
 >
 
 type ChartType = 'recoveryPeriod' | 'activePatients'
@@ -39,9 +39,9 @@ type ChartType = 'recoveryPeriod' | 'activePatients'
 export class PeriodOffset extends BaseChart {
   marginBottom = 80
 
-  lossPercent = 1.1
+  lossPercent = 1.04
 
-  maxTickWidth = 35
+  maxTickWidth = 60
 
   private type: ChartType = 'activePatients'
 
@@ -61,9 +61,13 @@ export class PeriodOffset extends BaseChart {
 
   private timeAxisBox?: Selection<SVGGElement, undefined, null, undefined>
 
-  private overBars?: TGroupBarSelection
+  private overBarsGroup?: TGroupBarSelection
 
-  private offsets?: TGroupBarSelection
+  private overBars?: TBarSelection
+
+  private offsetsGroup?: TGroupBarSelection
+
+  private offsets?: TBarSelection
 
   constructor(selector: string) {
     super(selector)
@@ -128,7 +132,7 @@ export class PeriodOffset extends BaseChart {
   private updateDomains(): void {
     const maxCount =
       (max(this.dataset, (item) => item[this.type]) as number) * 1.05
-    this.countScale.domain([0, maxCount])
+    this.countScale.domain([0, maxCount]).nice()
     this.timeScale.domain(this.dataset.map((item) => shortDate(item.date)))
   }
 
@@ -165,8 +169,8 @@ export class PeriodOffset extends BaseChart {
     this.countAxis.scale(this.countScale)
 
     if (this.countAxisBox) {
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-      this.countAxisBox!.transition(transition as any)
+      this.countAxisBox
+        .transition('base')
         .attr(
           'transform',
           `translate(${this.marginLeft + this.innerWidth!}, 0)`,
@@ -187,38 +191,49 @@ export class PeriodOffset extends BaseChart {
         (dataLength - i - 1) % divisorTime ? '' : value,
       )
     if (this.timeAxisBox) {
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
       this.timeAxisBox
-        .transition(transition as any)
+        .transition('base')
         .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
         .call(this.timeAxis)
     }
   }
 
   private renderBars(): void {
-    this.overBars = this.svg
+    this.overBarsGroup = (this.svg as Selection<
+      SVGSVGElement,
+      unknown,
+      HTMLElement,
+      unknown
+    >)
       .append('g')
       .attr('clip-path', `url(#clip-${this.id})`)
 
-    this.overBars!.selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
-      .data(this.dataset, ({ date }) => date)
+    this.overBars = this.overBarsGroup
+      .selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
+      .data(this.dataset, (item) => item?.date.toDateString())
       .join((enter) => this._enterOvers(enter))
 
-    this.offsets = this.svg
+    this.offsetsGroup = (this.svg as Selection<
+      SVGSVGElement,
+      unknown,
+      HTMLElement,
+      unknown
+    >)
       .append('g')
       .classed('cases', true)
       .attr('clip-path', `url(#clip-${this.id})`)
 
-    this.offsets!.selectAll<SVGRectElement, PeriodOffsetItem>('.caseBar')
-      .data(this.dataset, ({ date }) => date)
+    this.offsets = this.offsetsGroup
+      .selectAll<SVGRectElement, PeriodOffsetItem>('.caseBar')
+      .data(this.dataset, ({ date }) => date.toDateString())
       .join((enter) => this._enterCases(enter))
   }
 
   private updateBars(): void {
-    if (this.overBars) {
-      this.overBars
+    if (this.overBarsGroup) {
+      this.overBarsGroup
         .selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
-        .data(this.dataset, ({ date }) => date)
+        .data(this.dataset, ({ date }) => date.toDateString())
         .join(
           (enter) => this._enterOvers(enter),
           (update) => update,
@@ -230,32 +245,30 @@ export class PeriodOffset extends BaseChart {
         .attr('height', this.innerHeight!)
     }
 
-    if (this.offsets) {
-      this.offsets
+    if (this.offsetsGroup) {
+      this.offsetsGroup
         .selectAll<SVGRectElement, PeriodOffsetItem>('.caseBar')
-        .data(this.dataset, ({ date }) => date)
+        .data(this.dataset, ({ date }) => date.toDateString())
         .join(
           (enter) => this._enterCases(enter),
           (update) => update,
           (exit) =>
             exit
-              // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-              .transition(transition as any)
+              .transition('base')
               .attr(
                 'x',
                 ({ date }) => this.timeScale(shortDate(date)) ?? 0 + 100,
               )
               .remove(),
         )
-        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-        .transition(transition as any)
+        .transition('base')
         .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
         .attr('width', this.timeScale.bandwidth())
         .attr('y', (item) => this.countScale(item[this.type]))
-        .attr(
-          'height',
-          (item) => this.countScale(0) - this.countScale(item[this.type]),
-        )
+        .attr('height', (item) => {
+          const height = this.countScale(0) - this.countScale(item[this.type])
+          return height < 0 ? 0 : height
+        })
     }
   }
 
@@ -287,11 +300,12 @@ export class PeriodOffset extends BaseChart {
       .attr('y', () => this.countScale.range()[1] ?? null)
       .attr('width', this.timeScale.bandwidth() ?? null)
       .attr('height', () => this.innerHeight ?? null)
-      .on('mouseover', function (data, index) {
+      .on('mouseover', function (_event, data) {
+        const index = me.dataset.indexOf(data)
         const rect = select(this)
         me.tooltip.show({
           data: {
-            cases: data[me.type],
+            cases: data[me.type] < 0 ? '' : data[me.type],
             recover: null,
             deaths: null,
           },
@@ -342,7 +356,7 @@ export class PeriodOffset extends BaseChart {
     this.onUpdateOptions()
   }
 
-  public onZoom(): void {
+  public onZoom(event: D3ZoomEvent<SVGElement, unknown>): void {
     const range = [this.marginLeft, this.width - this.marginRight].map((d) =>
       event.transform.applyX(d),
     )

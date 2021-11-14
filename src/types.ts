@@ -3,8 +3,15 @@ export interface HistoryTerritory {
   confirmed: number
 }
 
-export interface History {
+export interface HistoryDto {
   date: string
+  cases: number
+  recover: number
+  deaths: number
+}
+
+export interface History {
+  date: Date
   cases: number
   recover: number
   deaths: number
@@ -24,13 +31,18 @@ export interface HistoryMoment {
 
 export interface EnrichHistory extends History, HistoryDay, HistoryMoment {}
 
-export interface InfoData {
+export interface InfoDataDto {
   date: string
-  items: Array<Record<string, unknown>>
+  items: Record<string, unknown>[]
+}
+
+export interface InfoData {
+  date: Date
+  items: Record<string, unknown>[]
 }
 
 export interface Data {
-  updateDate: string
+  updateDate: Date
   data: EnrichHistory[]
   regions: InfoData['items']
 }

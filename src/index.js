@@ -6,44 +6,52 @@ import SimpleChart from './chart/Simple'
 import PeriodChart from './chart/PeriodOffset'
 import './style/main.scss'
 
-const simpleChart = new SimpleChart('chart')
-const periodChart = new PeriodChart('period-offset-chart')
+function renderSimpleChart() {
+  const simpleChart = new SimpleChart('chart')
 
-selectAll('.scaleTypeBtn').on('click', function () {
-  const scaleType = this.dataset.value
-  selectAll('.scaleTypeBtn').each(function () {
-    select(this).classed('active', this.dataset.value === scaleType)
+  selectAll('.scaleTypeBtn').on('click', function () {
+    const scaleType = this.dataset.value
+    selectAll('.scaleTypeBtn').each(function () {
+      select(this).classed('active', this.dataset.value === scaleType)
+    })
+    simpleChart.setScaleType(scaleType)
   })
-  simpleChart.setScaleType(scaleType)
-})
 
-selectAll('.chartTypeBtn').on('click', function () {
-  const chartType = this.dataset.value
-  selectAll('.chartTypeBtn').each(function () {
-    select(this).classed('active', this.dataset.value === chartType)
+  selectAll('.chartTypeBtn').on('click', function () {
+    const chartType = this.dataset.value
+    selectAll('.chartTypeBtn').each(function () {
+      select(this).classed('active', this.dataset.value === chartType)
+    })
+    selectAll('.typeDescription').each(function () {
+      select(this).classed('active', this.dataset.type === chartType)
+    })
+    simpleChart.setType(chartType)
   })
-  selectAll('.typeDescription').each(function () {
-    select(this).classed('active', this.dataset.type === chartType)
-  })
-  simpleChart.setType(chartType)
-})
+}
 
-selectAll('.periodOffsetChartTypeBtn').on('click', function () {
-  const chartType = this.dataset.value
-  selectAll('.periodOffsetChartTypeBtn').each(function () {
-    select(this).classed('active', this.dataset.value === chartType)
-  })
-  selectAll('.offsetTypeDescription').each(function () {
-    select(this).classed('active', this.dataset.type === chartType)
-  })
-  periodChart.onUpdateType(chartType)
-})
+function renderPeriodChart() {
+  const periodChart = new PeriodChart('period-offset-chart')
 
-const offsetLabel = select('label[for=lossPercentChartOffset]')
-select('.lossPercentChartOffset')
-  .on('change', function () {
-    periodChart.onUpdateLossPercent(+this.value)
+  selectAll('.periodOffsetChartTypeBtn').on('click', function () {
+    const chartType = this.dataset.value
+    selectAll('.periodOffsetChartTypeBtn').each(function () {
+      select(this).classed('active', this.dataset.value === chartType)
+    })
+    selectAll('.offsetTypeDescription').each(function () {
+      select(this).classed('active', this.dataset.type === chartType)
+    })
+    periodChart.onUpdateType(chartType)
   })
-  .on('input', function () {
-    offsetLabel.html(`Доля неучтенных вылечившихся <em>${this.value}%</em>`)
-  })
+
+  const offsetLabel = select('label[for=lossPercentChartOffset]')
+  select('.lossPercentChartOffset')
+    .on('change', function () {
+      periodChart.onUpdateLossPercent(+this.value)
+    })
+    .on('input', function () {
+      offsetLabel.html(`Доля неучтенных вылечившихся <em>${this.value}%</em>`)
+    })
+}
+
+renderSimpleChart()
+renderPeriodChart()

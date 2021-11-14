@@ -1,18 +1,20 @@
+import 'd3-transition'
 import { max } from 'd3-array'
-import { select, event } from 'd3-selection'
+import { select } from 'd3-selection'
 import { scaleBand, scaleLinear } from 'd3-scale'
 import { axisRight, axisBottom } from 'd3-axis'
 import { format } from 'd3-format'
 import { shortDate, serverShortToDate } from '../format/date'
+import { humanInt } from '../format/number'
+import { casesColor } from '../transition'
 import BaseChart from './Base'
-import transition, { casesColor } from '../transition'
 
 const int = format(',d')
 
 export default class RegionChart extends BaseChart {
   marginTop = 18
 
-  maxTickWidth = 35
+  maxTickWidth = 60
 
   history = []
 
@@ -43,7 +45,7 @@ export default class RegionChart extends BaseChart {
   }
 
   renderAxes() {
-    this.countAxis = axisRight().tickSizeOuter(0)
+    this.countAxis = axisRight().tickSizeOuter(0).tickFormat(humanInt)
     this.countAxisBox = this.svg
       .append('g')
       .classed('count_axis', true)
@@ -61,7 +63,7 @@ export default class RegionChart extends BaseChart {
 
     this.countAxisBox
       .interrupt()
-      .transition(transition)
+      .transition('base')
       .attr('transform', `translate(${this.marginLeft + this.innerWidth}, 0)`)
       .call(this.countAxis)
 
@@ -79,7 +81,7 @@ export default class RegionChart extends BaseChart {
       )
     this.timeAxisBox
       .interrupt()
-      .transition(transition)
+      .transition('base')
       .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
       .call(this.timeAxis)
   }
@@ -230,12 +232,12 @@ export default class RegionChart extends BaseChart {
         (update) => update,
         (exit) =>
           exit
-            .transition(transition)
+            .transition('base')
             .attr('y', () => this.countScale.range()[0])
             .attr('height', 0)
             .remove(),
       )
-      .transition(transition)
+      .transition('base')
       .call(this._updateBars.bind(this))
       .attr('y', (item) => this.countScale(item[`confirmed${this.suffix}`]))
       .attr(
@@ -258,9 +260,10 @@ export default class RegionChart extends BaseChart {
     return enter
       .append('rect')
       .classed('overBar', true)
-      .on('mouseover', function (data, index) {
+      .on('mouseover', function (_event, data) {
         const rect = select(this)
         const history = me.getHistory()
+        const index = history.indexOf(data)
         me.tooltip.show({
           data: {
             cases: data[`confirmed${me.suffix}`],
@@ -269,9 +272,9 @@ export default class RegionChart extends BaseChart {
           },
           right:
             index > history.length / 2
-              ? `${me.width - (+rect.attr('x') + +rect.attr('width'))  }px`
+              ? `${me.width - (+rect.attr('x') + +rect.attr('width'))}px`
               : 'auto',
-          left: index <= history.length / 2 ? `${rect.attr('x')  }px` : 'auto',
+          left: index <= history.length / 2 ? `${rect.attr('x')}px` : 'auto',
         })
       })
       .on('mouseout', () => {
@@ -312,7 +315,7 @@ export default class RegionChart extends BaseChart {
     this.updateBars()
   }
 
-  onZoom() {
+  onZoom(event) {
     if (this._didSet) {
       const range = [this.marginLeft, this.width - this.marginRight].map((d) =>
         event.transform.applyX(d),

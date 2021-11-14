@@ -5,8 +5,10 @@ import { compose } from './util'
 
 import type {
   Data,
+  InfoDataDto,
   InfoData,
   EnrichHistory,
+  HistoryDto,
   History,
   HistoryMoment,
 } from './types'
@@ -30,7 +32,7 @@ class Dataset implements IDataset {
 
   private convertHistory: (data: History[]) => EnrichHistory[]
 
-  private cache: string = cacheDate(Date.now())
+  private cache: string = cacheDate(new Date())
 
   constructor() {
     this.convertHistory = this.converter()
@@ -69,13 +71,13 @@ class Dataset implements IDataset {
 
   public requestInfo() {
     return axios
-      .get<InfoData>(`/api/json/by-territory.${this.location}.json`, {
+      .get<InfoDataDto>(`/api/json/by-territory.${this.location}.json`, {
         params: { cache: this.cache },
       })
       .then(
         ({ data }): InfoData => ({
           ...data,
-          date: serverToDate(data.date),
+          date: serverToDate(data.date) ?? new Date(),
         }),
       )
   }
@@ -112,10 +114,10 @@ class Dataset implements IDataset {
     }))
   }
 
-  private formatDate(data: History[]): History[] {
+  private formatDate(data: HistoryDto[]): History[] {
     return data.map((item) => ({
       ...item,
-      date: serverShortToDate(item.date),
+      date: serverShortToDate(item.date) ?? new Date(),
     }))
   }
 }

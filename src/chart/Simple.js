@@ -1,11 +1,13 @@
+import 'd3-transition'
 import { max } from 'd3-array'
-import { select, event } from 'd3-selection'
+import { select } from 'd3-selection'
 import { scaleBand, scaleLinear, scalePow } from 'd3-scale'
 import { axisRight, axisBottom } from 'd3-axis'
 import { shortDate as sortDateFn } from '../format/date'
 import dataset from '../Dataset'
 import BaseChart from './Base'
-import transition, { casesColor } from '../transition'
+import { humanInt } from '../format/number'
+import { casesColor } from '../transition'
 import {
   ALL_TYPE,
   PERIOD_TYPE,
@@ -18,7 +20,7 @@ export default class Chart extends BaseChart {
 
   scaleType = 'linear'
 
-  maxTickWidth = 35
+  maxTickWidth = 60
 
   constructor(selector) {
     super(selector)
@@ -86,7 +88,7 @@ export default class Chart extends BaseChart {
   }
 
   renderAxes() {
-    this.countAxis = axisRight().tickSizeOuter(0)
+    this.countAxis = axisRight().tickSizeOuter(0).tickFormat(humanInt)
 
     this.countAxisBox = this.svg
       .append('g')
@@ -104,7 +106,7 @@ export default class Chart extends BaseChart {
   updateAxes() {
     this.countAxis.scale(this.countScale)
     this.countAxisBox
-      .transition(transition)
+      .transition('base')
       .attr('transform', `translate(${this.width - this.marginRight}, 0)`)
       .call(this.countAxis)
 
@@ -122,7 +124,7 @@ export default class Chart extends BaseChart {
       )
 
     this.timeAxisBox
-      .transition(transition)
+      .transition('base')
       .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
       .call(this.timeAxis)
   }
@@ -212,7 +214,8 @@ export default class Chart extends BaseChart {
     return enter
       .append('rect')
       .classed('overBar', true)
-      .on('mouseover', function (data, index) {
+      .on('mouseover', function (_event, data) {
+        const index = me.dataset.indexOf(data)
         const rect = select(this)
         me.tooltip.show({
           data: {
@@ -253,7 +256,7 @@ export default class Chart extends BaseChart {
     const dx = this.timeScale.bandwidth() - bandWidth
 
     return update
-      .transition(transition)
+      .transition('base')
       .attr('x', ({ shortDate }) => this.timeScale(shortDate) + dx)
       .attr('width', bandWidth)
       .attr('y', (item) => this.countScale(item[property]))
@@ -303,7 +306,7 @@ export default class Chart extends BaseChart {
     this.updateBars()
   }
 
-  onZoom() {
+  onZoom(event) {
     if (this.dataset) {
       const range = [this.marginLeft, this.width - this.marginRight].map((d) =>
         event.transform.applyX(d),
