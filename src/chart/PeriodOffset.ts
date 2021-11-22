@@ -55,11 +55,11 @@ export class PeriodOffset extends BaseChart {
 
   private countAxis: Axis<number> = axisRight<number>(scaleLinear())
 
-  private countAxisBox?: Selection<SVGGElement, undefined, null, undefined>
+  private countAxisBox?: Selection<SVGGElement, unknown, HTMLElement, unknown>
 
   private timeAxis: Axis<string> = axisBottom<string>(scaleBand())
 
-  private timeAxisBox?: Selection<SVGGElement, undefined, null, undefined>
+  private timeAxisBox?: Selection<SVGGElement, unknown, HTMLElement, unknown>
 
   private overBarsGroup?: TGroupBarSelection
 
@@ -71,7 +71,6 @@ export class PeriodOffset extends BaseChart {
 
   constructor(selector: string) {
     super(selector)
-    this.updateSizes()
     this.updateZoom()
     this.initScales()
 
@@ -122,10 +121,13 @@ export class PeriodOffset extends BaseChart {
   }
 
   private initScales(): void {
-    this.countScale.range([this.height - this.marginBottom, this.marginTop])
+    this.countScale.range([
+      Number(this.height) - this.marginBottom,
+      this.marginTop,
+    ])
 
     this.timeScale
-      .range([this.marginLeft, this.width - this.marginRight])
+      .range([this.marginLeft, Number(this.width) - this.marginRight])
       .padding(0.1)
   }
 
@@ -137,30 +139,26 @@ export class PeriodOffset extends BaseChart {
   }
 
   private updateRanges(): void {
-    this.countScale.range([this.height - this.marginBottom, this.marginTop])
-    this.timeScale.range([this.marginLeft, this.width - this.marginRight])
+    this.countScale.range([
+      Number(this.height) - this.marginBottom,
+      this.marginTop,
+    ])
+    this.timeScale.range([
+      this.marginLeft,
+      Number(this.width) - this.marginRight,
+    ])
   }
 
   private renderAxes(): void {
     this.countAxis.tickSizeOuter(0).tickFormat(humanInt)
 
-    this.countAxisBox = (this.svg as Selection<
-      SVGSVGElement,
-      undefined,
-      null,
-      undefined
-    >)
+    this.countAxisBox = this.svg
       .append<SVGGElement>('g')
       .classed('count_axis', true)
 
     this.timeAxis.tickSize(0).tickPadding(10)
 
-    this.timeAxisBox = (this.svg as Selection<
-      SVGSVGElement,
-      undefined,
-      null,
-      undefined
-    >)
+    this.timeAxisBox = this.svg
       .append<SVGGElement>('g')
       .classed('time_axis', true)
   }
@@ -193,18 +191,16 @@ export class PeriodOffset extends BaseChart {
     if (this.timeAxisBox) {
       this.timeAxisBox
         .transition('base')
-        .attr('transform', `translate(0, ${this.height - this.marginBottom})`)
+        .attr(
+          'transform',
+          `translate(0, ${Number(this.height) - this.marginBottom})`,
+        )
         .call(this.timeAxis)
     }
   }
 
   private renderBars(): void {
-    this.overBarsGroup = (this.svg as Selection<
-      SVGSVGElement,
-      unknown,
-      HTMLElement,
-      unknown
-    >)
+    this.overBarsGroup = this.svg
       .append('g')
       .attr('clip-path', `url(#clip-${this.id})`)
 
@@ -213,12 +209,7 @@ export class PeriodOffset extends BaseChart {
       .data(this.dataset, (item) => item?.date.toDateString())
       .join((enter) => this._enterOvers(enter))
 
-    this.offsetsGroup = (this.svg as Selection<
-      SVGSVGElement,
-      unknown,
-      HTMLElement,
-      unknown
-    >)
+    this.offsetsGroup = this.svg
       .append('g')
       .classed('cases', true)
       .attr('clip-path', `url(#clip-${this.id})`)
@@ -311,7 +302,9 @@ export class PeriodOffset extends BaseChart {
           },
           right:
             index > me.dataset.length / 2
-              ? `${me.width - (+rect.attr('x') + +rect.attr('width'))}px`
+              ? `${
+                  Number(me.width) - (+rect.attr('x') + +rect.attr('width'))
+                }px`
               : 'auto',
           left: index <= me.dataset.length / 2 ? `${rect.attr('x')}px` : 'auto',
         })
@@ -357,9 +350,10 @@ export class PeriodOffset extends BaseChart {
   }
 
   public onZoom(event: D3ZoomEvent<SVGElement, unknown>): void {
-    const range = [this.marginLeft, this.width - this.marginRight].map((d) =>
-      event.transform.applyX(d),
-    )
+    const range = [
+      this.marginLeft,
+      Number(this.width) - this.marginRight,
+    ].map((d) => event.transform.applyX(d))
     this.timeScale.range(range)
     if (this.timeAxisBox) {
       this.timeAxisBox.call(this.timeAxis)
