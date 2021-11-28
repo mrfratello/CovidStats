@@ -20,14 +20,14 @@ interface PeriodOffsetItem {
   activePatients: number
 }
 
-type TGroupBarSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>
-type TBarSelection = Selection<
+type GroupBarSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>
+type BarSelection = Selection<
   SVGRectElement,
   PeriodOffsetItem,
   SVGGElement,
   unknown
 >
-type TBarEnterSelection = Selection<
+type BarEnterSelection = Selection<
   EnterElement,
   PeriodOffsetItem,
   SVGGElement,
@@ -61,13 +61,13 @@ export class PeriodOffset extends BaseChart {
 
   private timeAxisBox?: Selection<SVGGElement, unknown, HTMLElement, unknown>
 
-  private overBarsGroup?: TGroupBarSelection
+  private overBarsGroup?: GroupBarSelection
 
-  private overBars?: TBarSelection
+  private overBars?: BarSelection
 
-  private offsetsGroup?: TGroupBarSelection
+  private offsetsGroup?: GroupBarSelection
 
-  private offsets?: TBarSelection
+  private offsets?: BarSelection
 
   constructor(selector: string) {
     super(selector)
@@ -221,46 +221,29 @@ export class PeriodOffset extends BaseChart {
   }
 
   private updateBars(): void {
-    if (this.overBarsGroup) {
-      this.overBarsGroup
-        .selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
-        .data(this.dataset, ({ date }) => date.toDateString())
-        .join(
-          (enter) => this._enterOvers(enter),
-          (update) => update,
-          (exit) => exit.remove(),
-        )
-        .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-        .attr('width', this.timeScale.bandwidth())
-        .attr('y', () => this.countScale.range()[1])
-        .attr('height', this.innerHeight!)
-    }
+    this.overBarsGroup
+      ?.selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
+      .data(this.dataset, ({ date }) => date.toDateString())
+      .join(
+        (enter) => this._enterOvers(enter),
+        (update) => update,
+        (exit) => exit.remove(),
+      )
+      .call(this.updateOvers.bind(this))
 
-    if (this.offsetsGroup) {
-      this.offsetsGroup
-        .selectAll<SVGRectElement, PeriodOffsetItem>('.caseBar')
-        .data(this.dataset, ({ date }) => date.toDateString())
-        .join(
-          (enter) => this._enterCases(enter),
-          (update) => update,
-          (exit) =>
-            exit
-              .transition('base')
-              .attr(
-                'x',
-                ({ date }) => this.timeScale(shortDate(date)) ?? 0 + 100,
-              )
-              .remove(),
-        )
-        .transition('base')
-        .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-        .attr('width', this.timeScale.bandwidth())
-        .attr('y', (item) => this.countScale(item[this.type]))
-        .attr('height', (item) => {
-          const height = this.countScale(0) - this.countScale(item[this.type])
-          return height < 0 ? 0 : height
-        })
-    }
+    this.offsetsGroup
+      ?.selectAll<SVGRectElement, PeriodOffsetItem>('.caseBar')
+      .data(this.dataset, ({ date }) => date.toDateString())
+      .join(
+        (enter) => this._enterCases(enter),
+        (update) => update,
+        (exit) =>
+          exit
+            .transition('base')
+            .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? 0 + 100)
+            .remove(),
+      )
+      .call(this.updateCases.bind(this))
   }
 
   private zoomBars(): void {
@@ -281,7 +264,7 @@ export class PeriodOffset extends BaseChart {
     }
   }
 
-  private _enterOvers(enter: TBarEnterSelection): TBarSelection {
+  private _enterOvers(enter: BarEnterSelection): BarSelection {
     const me = this
 
     return enter
@@ -314,7 +297,7 @@ export class PeriodOffset extends BaseChart {
       })
   }
 
-  private _enterCases(enter: TBarEnterSelection): TBarSelection {
+  private _enterCases(enter: BarEnterSelection): BarSelection {
     return enter
       .append<SVGRectElement>('rect')
       .classed('caseBar', true)
@@ -322,6 +305,26 @@ export class PeriodOffset extends BaseChart {
       .attr('y', this.countScale.range()[0])
       .attr('width', this.timeScale.bandwidth() / 2)
       .attr('height', 0)
+  }
+
+  private updateOvers(update: BarSelection) {
+    return update
+      .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
+      .attr('width', this.timeScale.bandwidth())
+      .attr('y', () => this.countScale.range()[1])
+      .attr('height', this.innerHeight!)
+  }
+
+  private updateCases(update: BarSelection) {
+    return update
+      .transition('base')
+      .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
+      .attr('width', this.timeScale.bandwidth())
+      .attr('y', (item) => this.countScale(item[this.type]))
+      .attr('height', (item) => {
+        const height = this.countScale(0) - this.countScale(item[this.type])
+        return height < 0 ? 0 : height
+      })
   }
 
   public onResize(): void {
