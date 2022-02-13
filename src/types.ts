@@ -23,28 +23,13 @@ export interface HistoryMoment {
 
 export type EnrichHistory = History & HistoryDay & HistoryMoment
 
-export interface InfoDataDto {
-  date: string
-  items: Record<string, unknown>[]
-}
-
-export interface InfoData {
-  date: Date
-  items: Record<string, unknown>[]
-}
-
-export interface Data {
-  updateDate: Date
-  data: EnrichHistory[]
-  regions: InfoData['items']
-}
-
 export interface HistoryTerritory {
   date: string
   confirmed: number
   recover: number
   deaths: number
 }
+
 export interface RegionData {
   territoryName: string
   history: HistoryTerritory[]
@@ -56,4 +41,26 @@ export interface RegionData {
   deathsRelative: number
   recovered: number
   recoveredInc: number
+}
+
+export type RegionDataInfoTypes =
+  | 'confirmed'
+  | 'deaths'
+  | 'recovered'
+  | 'confirmedRelative'
+  | 'deathsRelative'
+
+export interface InfoDataDto {
+  date: string
+  items: RegionData[]
+}
+
+export interface InfoData extends Omit<InfoDataDto, 'date'> {
+  date: Date
+}
+
+export interface Data {
+  updateDate: Date
+  data: EnrichHistory[]
+  regions: InfoData['items']
 }

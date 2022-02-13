@@ -13,7 +13,11 @@ import { humanInt } from '../format/number'
 import { casesColor } from '../transition'
 import BaseChart from './Base'
 
-import type { RegionData, HistoryTerritory } from '../types'
+import type {
+  RegionData,
+  HistoryTerritory,
+  RegionDataInfoTypes,
+} from '../types'
 
 interface RegionHistory extends Pick<HistoryTerritory, 'date' | 'confirmed'> {
   confirmedInc: number
@@ -34,16 +38,9 @@ type EnterBarSelection = Selection<
   unknown
 >
 
-type InfoTypes =
-  | 'confirmed'
-  | 'deaths'
-  | 'recovered'
-  | 'confirmedRelative'
-  | 'deathsRelative'
-
 const int = format(',d')
 
-export default class RegionChart extends BaseChart {
+export class RegionChart extends BaseChart {
   marginTop = 18
 
   maxTickWidth = 60
@@ -188,7 +185,7 @@ export default class RegionChart extends BaseChart {
       `)
   }
 
-  private getTooltipValue(data: RegionData, type: InfoTypes): string {
+  private getTooltipValue(data: RegionData, type: RegionDataInfoTypes): string {
     let value = int(data[type])
     if (`${type}Inc` in data) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -414,3 +411,5 @@ export default class RegionChart extends BaseChart {
     this.zoomBars()
   }
 }
+
+export default RegionChart
