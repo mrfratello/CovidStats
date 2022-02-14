@@ -279,7 +279,7 @@ export class PeriodOffset extends BaseChart {
         const rect = select(this)
         me.tooltip.show({
           data: {
-            cases: data[me.type] < 0 ? '' : data[me.type],
+            cases: data[me.type] < 0 ? 0 : data[me.type],
             recover: null,
             deaths: null,
           },
