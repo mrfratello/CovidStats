@@ -187,10 +187,8 @@ export class RegionChart extends BaseChart {
 
   private getTooltipValue(data: RegionData, type: RegionDataInfoTypes): string {
     let value = int(data[type])
-    if (`${type}Inc` in data) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const inc = data[`${type}Inc`] as number
+    if (type !== 'confirmedRelative' && type !== 'deathsRelative') {
+      const inc = data[`${type}Inc`]
       value += ` (+${int(inc)})`
     }
     return value
@@ -272,11 +270,7 @@ export class RegionChart extends BaseChart {
 
   private updateDomains() {
     const maxCount =
-      max(
-        this.history.map((item) =>
-          this.suffix === 'Inc' ? item.confirmedInc : item.confirmed,
-        ),
-      ) ?? 1
+      max(this.history.map((item) => item[`confirmed${this.suffix}`])) ?? 1
 
     this.countScale.domain([0, maxCount])
     this.timeScale.domain(this.history.map((item) => item.date))
@@ -330,7 +324,7 @@ export class RegionChart extends BaseChart {
         const width = me.width ?? NaN
         me.tooltip.show({
           data: {
-            cases: me.suffix === 'Inc' ? data.confirmedInc : data.confirmed,
+            cases: data[`confirmed${me.suffix}`],
             recover: null,
             deaths: null,
           },
@@ -369,18 +363,11 @@ export class RegionChart extends BaseChart {
       .transition('base')
       .attr('x', ({ date }) => this.timeScale(date) ?? null)
       .attr('width', this.timeScale.bandwidth())
-      .attr('y', (item) =>
-        this.countScale(
-          this.suffix === 'Inc' ? item.confirmedInc : item.confirmed,
-        ),
-      )
+      .attr('y', (item) => this.countScale(item[`confirmed${this.suffix}`]))
       .attr(
         'height',
         (item) =>
-          this.countScale(0) -
-          this.countScale(
-            this.suffix === 'Inc' ? item.confirmedInc : item.confirmed,
-          ),
+          this.countScale(0) - this.countScale(item[`confirmed${this.suffix}`]),
       )
       .style('fill', (item) => casesColor(item.confirmedInc / this.maxInc))
   }

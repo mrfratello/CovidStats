@@ -338,7 +338,7 @@ export class Territory extends BaseChart {
   }
 
   private updatePathBySize(): void {
-    const data = this.view === 'full' ? this.fullDataset : this.europeDataset
+    const data = this[`${this.view}Dataset`]
     const rotate: [number, number, number] =
       this.view === 'full' ? [-100, -60, 5] : [-80, -60, 0]
     this.projection
@@ -465,7 +465,7 @@ export class Territory extends BaseChart {
       .append('path')
       .classed('region', true)
       .attr('fill', '#d1d1d1')
-      .on('mouseover', function (_event, { properties }) {
+      .on('mouseover', (_event, { properties }) => {
         const { stat } = properties
 
         const confirmed = stat ? me.getTooltipValue(stat, 'confirmed') : '?'
@@ -492,7 +492,7 @@ export class Territory extends BaseChart {
           </small>
         `)
       })
-      .on('click', function (_event, { properties: { stat } }) {
+      .on('click', (_event, { properties: { stat } }) => {
         me.regionChart.show().then((regionChart) => {
           regionChart.setDataset(stat)
         })
@@ -501,10 +501,8 @@ export class Territory extends BaseChart {
 
   private getTooltipValue(data: RegionData, type: RegionDataInfoTypes) {
     let value = int(data[type])
-    if (`${type}Inc` in data) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const inc = data[`${type}Inc`] as number
+    if (type !== 'confirmedRelative' && type !== 'deathsRelative') {
+      const inc = data[`${type}Inc`]
       value += ` (+${int(inc)})`
     }
     return value

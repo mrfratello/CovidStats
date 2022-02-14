@@ -23,4 +23,4 @@ export const debounce = (f, ms) => {
 }
 
 export const sleep = (timeout) =>
-  new Promise((resolve) => setTimeout(resolve, timeout))
+  new Promise((resolve) => { setTimeout(resolve, timeout) })

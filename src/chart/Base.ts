@@ -74,7 +74,6 @@ export default abstract class Base {
   }
 
   private initZoom() {
-    const me = this
     const extent: [[number, number], [number, number]] = [
       [this.marginLeft, this.marginTop],
       [
@@ -86,8 +85,8 @@ export default abstract class Base {
       .scaleExtent([1, 1])
       .translateExtent(extent)
       .extent(extent)
-      .on(`zoom.${this.id}`, function (event) {
-        me.onZoom(event)
+      .on(`zoom.${this.id}`, (event) => {
+        this.onZoom(event)
       })
 
     this.svg.call(this.zoom)

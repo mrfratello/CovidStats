@@ -29,9 +29,11 @@ module.exports = {
       extends: [
         'plugin:@typescript-eslint/recommended',
         'prettier',
-        'prettier/@typescript-eslint',
       ],
       parser: '@typescript-eslint/parser',
+      parserOptions: {
+        project: './tsconfig.json'
+      },
       plugins: ['@typescript-eslint'],
       rules: {
         '@typescript-eslint/no-non-null-assertion': 0,
