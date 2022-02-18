@@ -1,51 +1,27 @@
 module.exports = {
-  env: {
-    browser: true,
-    es2021: true,
-  },
-  parser: '@babel/eslint-parser',
-  extends: ['airbnb-base', 'prettier'],
+  root: true,
+  extends: [
+    'airbnb-base',
+    'airbnb-typescript/base',
+    'plugin:@typescript-eslint/recommended',
+    'prettier',
+  ],
+  parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: 12,
-    sourceType: 'module',
+    project: './tsconfig.json'
   },
+  plugins: ['@typescript-eslint'],
   rules: {
-    semi: ['error', 'never'],
     'func-names': ['warn', 'never'],
     'class-methods-use-this': ['off'],
     'no-underscore-dangle': ['off'],
-    'import/extensions': [
-      'error',
-      'ignorePackages',
-      {
-        js: 'never',
-        ts: 'never',
-      },
-    ],
+    'import/prefer-default-export': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-this-alias': 'off',
   },
-  overrides: [
-    {
-      files: ['**/*.ts'],
-      extends: [
-        'plugin:@typescript-eslint/recommended',
-        'prettier',
-      ],
-      parser: '@typescript-eslint/parser',
-      parserOptions: {
-        project: './tsconfig.json'
-      },
-      plugins: ['@typescript-eslint'],
-      rules: {
-        '@typescript-eslint/no-non-null-assertion': 0,
-        '@typescript-eslint/no-this-alias': 0,
-      },
-    },
-  ],
-  settings: {
-    'import/resolver': {
-      node: {
-        extensions: ['.js', '.ts'],
-      },
-    },
+
+  env: {
+    browser: true,
+    es2021: true,
   },
 }

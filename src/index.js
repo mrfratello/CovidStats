@@ -2,9 +2,8 @@ import { selectAll, select } from 'd3-selection'
 import './format'
 import './ui/navbar'
 import './ui/scrollLink'
-import SimpleChart from './chart/Simple'
-import PeriodChart from './chart/PeriodOffset'
-import './style/main.scss'
+import { Simple as SimpleChart } from './chart/Simple'
+import { PeriodOffset as PeriodChart } from './chart/PeriodOffset'
 
 function renderSimpleChart() {
   const simpleChart = new SimpleChart('chart')

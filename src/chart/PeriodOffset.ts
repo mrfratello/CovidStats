@@ -10,7 +10,7 @@ import type { D3ZoomEvent } from 'd3-zoom'
 import { humanInt } from '../format/number'
 import { shortDate } from '../format/date'
 import dataset from '../Dataset'
-import BaseChart from './Base'
+import { Base } from './Base'
 
 import type { History, EnrichHistory } from '../types'
 
@@ -36,7 +36,7 @@ type BarEnterSelection = Selection<
 
 type ChartType = 'recoveryPeriod' | 'activePatients'
 
-export class PeriodOffset extends BaseChart {
+export class PeriodOffset extends Base {
   marginBottom = 80
 
   lossPercent = 1.04
@@ -364,5 +364,3 @@ export class PeriodOffset extends BaseChart {
     this.zoomBars()
   }
 }
-
-export default PeriodOffset

@@ -11,7 +11,7 @@ import type { D3ZoomEvent } from 'd3-zoom'
 import { shortDate, serverShortToDate } from '../format/date'
 import { humanInt } from '../format/number'
 import { casesColor } from '../transition'
-import BaseChart from './Base'
+import { Base } from './Base'
 
 import type {
   RegionData,
@@ -40,7 +40,7 @@ type EnterBarSelection = Selection<
 
 const int = format(',d')
 
-export class RegionChart extends BaseChart {
+export class Region extends Base {
   marginTop = 18
 
   maxTickWidth = 60
@@ -398,5 +398,3 @@ export class RegionChart extends BaseChart {
     this.zoomBars()
   }
 }
-
-export default RegionChart

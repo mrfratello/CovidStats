@@ -2,10 +2,9 @@ import { selectAll, select } from 'd3-selection'
 import './format'
 import './ui/navbar'
 import './ui/dropdown'
-import TerritoryChart from './chart/Territory'
-import RegionChart from './chart/Region'
+import { Territory as TerritoryChart } from './chart/Territory'
+import { Region as RegionChart } from './chart/Region'
 import MapTimelapse from './timelapse/Map'
-import './style/main.scss'
 
 const regionChart = new RegionChart('region-chart')
 const territoryChart = new TerritoryChart('territory-chart', regionChart)

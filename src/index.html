@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Covid Stats Russia</title>
+    <link rel="stylesheet" href="./style/main.scss" />
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-primary">
@@ -14,12 +15,10 @@
       <div class="collapse navbar-collapse">
         <div class="navbar-nav">
           <a class="nav-item nav-link" href="#chart-box">Графики</a>
-          <a class="nav-item nav-link" href="/map.html">Карта</a>
+          <a class="nav-item nav-link" href="./map.html">Карта</a>
         </div>
       </div>
-      <span class="navbar-text d-none d-md-block"
-        >v.<%= htmlWebpackPlugin.options.version %></span
-      >
+      <span class="navbar-text d-none d-md-block">v.1.2.0</span>
     </nav>
     <div class="container-fluid screen screen_top">
       <div class="container content">
@@ -41,7 +40,7 @@
         </p>
         <p>
           Переходим <a class="go-to-chart" href="#chart-box">на графики ↓</a> и
-          <a href="/map.html">на карту →</a>
+          <a href="./map.html">на карту →</a>
         </p>
       </div>
     </div>
@@ -177,6 +176,13 @@
     <div class="powr-comments" id="d611ad1a_1586129861"></div>
 
     <script src="https://www.powr.io/powr.js?platform=html"></script>
-    <%= htmlWebpackPlugin.options.metrika %>
+    <!-- Yandex.Metrika counter -->
+    <!-- prettier-ignore -->
+    <script type="text/javascript">(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)}; m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)}) (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym"); ym(33220433, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true, trackHash:true });</script>
+    <!-- prettier-ignore -->
+    <noscript><div><img src="https://mc.yandex.ru/watch/33220433" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+
+    <script type="module" src="./index.js" />
   </body>
 </html>

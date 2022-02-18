@@ -9,7 +9,7 @@ import type { Axis } from 'd3-axis'
 import type { D3ZoomEvent } from 'd3-zoom'
 import { shortDate as sortDateFn } from '../format/date'
 import dataset from '../Dataset'
-import BaseChart from './Base'
+import { Base } from './Base'
 import { humanInt } from '../format/number'
 import { casesColor } from '../transition'
 import type { EnrichHistory, HistoryDay, HistoryMoment } from '../types'
@@ -45,7 +45,7 @@ const valueByType: Record<ChartType, ValueFn> = {
     item[`${prop}Moment` as keyof HistoryMoment],
 }
 
-export default class Chart extends BaseChart {
+export class Simple extends Base {
   private type: ChartType = ChartTypeEnum.Period
 
   private scaleType: 'linear' | 'pow' = 'linear'

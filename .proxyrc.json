@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://covid.syomochkin.xyz",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

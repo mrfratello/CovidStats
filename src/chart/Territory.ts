@@ -26,8 +26,8 @@ import dataset from '../Dataset'
 import { serverDate } from '../format/date'
 import { humanInt } from '../format/number'
 import type { RegionData, RegionDataInfoTypes } from '../types'
-import BaseChart from './Base'
-import type { RegionChart } from './Region'
+import { Base } from './Base'
+import type { Region } from './Region'
 
 const int = format(',d')
 
@@ -67,7 +67,7 @@ type FeatureCollection = ExtendedFeatureCollection<Feature>
 
 type EnterSelection = Selection<EnterElement, Feature, SVGGElement, unknown>
 
-export class Territory extends BaseChart {
+export class Territory extends Base {
   marginLeft = 0
 
   marginRight = 0
@@ -88,7 +88,7 @@ export class Territory extends BaseChart {
 
   type: ViewTypes = 'confirmed'
 
-  private regionChart: RegionChart
+  private regionChart: Region
 
   private progress: Selection<HTMLElement, unknown, HTMLElement, unknown>
 
@@ -154,7 +154,7 @@ export class Territory extends BaseChart {
 
   private _loaded = false
 
-  constructor(selector: string, regionChart: RegionChart) {
+  constructor(selector: string, regionChart: Region) {
     super(selector)
     this.updateClipPath()
     this.initGradients()
@@ -552,5 +552,3 @@ export class Territory extends BaseChart {
       .attr('transform', event.transform.k)
   }
 }
-
-export default Territory

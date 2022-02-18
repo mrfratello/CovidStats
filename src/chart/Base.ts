@@ -5,9 +5,9 @@ import type { D3ZoomEvent, ZoomBehavior } from 'd3-zoom'
 import ResizeObserver from 'resize-observer-polyfill'
 import { debounce } from '../util'
 import { fullDate } from '../format/date'
-import Tooltip from '../Tooltip'
+import { Tooltip } from '../Tooltip'
 
-export default abstract class Base {
+export abstract class Base {
   protected width?: number
 
   protected height?: number

@@ -46,5 +46,3 @@ export class Tooltip {
     this.box.selectAll('.value').remove()
   }
 }
-
-export default Tooltip
