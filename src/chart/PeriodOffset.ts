@@ -34,7 +34,7 @@ type BarEnterSelection = Selection<
   unknown
 >
 
-type ChartType = 'recoveryPeriod' | 'activePatients'
+export type PeriosOffsetChartType = 'recoveryPeriod' | 'activePatients'
 
 export class PeriodOffset extends Base {
   marginBottom = 80
@@ -43,7 +43,7 @@ export class PeriodOffset extends Base {
 
   maxTickWidth = 60
 
-  private type: ChartType = 'activePatients'
+  private type: PeriosOffsetChartType = 'activePatients'
 
   private pureDataset: History[] = []
 
@@ -342,7 +342,7 @@ export class PeriodOffset extends Base {
     this.updateBars()
   }
 
-  public onUpdateType(type: ChartType): void {
+  public onUpdateType(type: PeriosOffsetChartType): void {
     this.type = type
     this.onUpdateOptions()
   }

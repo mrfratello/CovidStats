@@ -29,6 +29,7 @@
     "@types/d3-time-format": "4.0.0",
     "@types/d3-transition": "3.0.1",
     "@types/d3-zoom": "3.0.1",
+    "@types/gtag.js": "0.0.8",
     "@typescript-eslint/eslint-plugin": "5.12.0",
     "@typescript-eslint/parser": "5.12.0",
     "autoprefixer": "^9.7.5",
@@ -63,6 +64,7 @@
     "d3-zoom": "3.0.0",
     "ismobilejs": "^1.1.1",
     "resize-observer-polyfill": "1.5.1",
-    "sass": "1.49.7"
+    "sass": "1.49.7",
+    "web-vitals": "2.1.4"
   }
 }

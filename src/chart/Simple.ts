@@ -32,12 +32,12 @@ const ChartTypeEnum = {
   AllSicks: 'allSicks',
 } as const
 
-type ChartType = typeof ChartTypeEnum[keyof typeof ChartTypeEnum]
+export type SimpleChartType = typeof ChartTypeEnum[keyof typeof ChartTypeEnum]
 
 type Property = 'cases' | 'recover' | 'deaths'
 type ValueFn = (prop: Property, item: EnrichHistory) => number
 
-const valueByType: Record<ChartType, ValueFn> = {
+const valueByType: Record<SimpleChartType, ValueFn> = {
   [ChartTypeEnum.All]: (prop, item) => item[prop],
   [ChartTypeEnum.Period]: (prop, item) =>
     item[`${prop}Day` as keyof HistoryDay],
@@ -45,10 +45,12 @@ const valueByType: Record<ChartType, ValueFn> = {
     item[`${prop}Moment` as keyof HistoryMoment],
 }
 
-export class Simple extends Base {
-  private type: ChartType = ChartTypeEnum.Period
+export type SimpleScaleType = 'linear' | 'pow'
 
-  private scaleType: 'linear' | 'pow' = 'linear'
+export class Simple extends Base {
+  private type: SimpleChartType = ChartTypeEnum.Period
+
+  private scaleType: SimpleScaleType = 'linear'
 
   private maxTickWidth = 60
 
@@ -384,17 +386,15 @@ export class Simple extends Base {
     this.updateBars()
   }
 
-  public setType(type: ChartType): void {
+  public setType(type: SimpleChartType): void {
     this.type = type
     this.prepareDataset()
     this.onUpdateOptions()
   }
 
-  public setScaleType(scaleType: 'linear' | 'pow'): void {
+  public setScaleType(scaleType: SimpleScaleType): void {
     this.scaleType = scaleType
-    this.countScale = this[
-      `${this.scaleType}Scale` as 'linearScale' | 'powScale'
-    ]
+    this.countScale = this[`${this.scaleType}Scale`]
     this.onUpdateOptions()
   }
 

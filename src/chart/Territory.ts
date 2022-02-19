@@ -33,14 +33,13 @@ const int = format(',d')
 
 type Scale = ScaleDiverging<number, undefined>
 
-interface Scales {
-  confirmed: Scale
-  deaths: Scale
-  confirmedRelative: Scale
-  deathsRelative: Scale
-}
+export type TerritoryViewType = 'confirmed' | 'deaths'
 
-type ViewTypes = keyof Scales
+export type TerritoryRelativeType = 'Relative' | ''
+
+type ViewTypes = `${TerritoryViewType}${TerritoryRelativeType}`
+
+type Scales = Record<ViewTypes, Scale>
 
 type Interpolations = Record<RegionDataInfoTypes, (n: number) => string>
 
@@ -67,6 +66,8 @@ type FeatureCollection = ExtendedFeatureCollection<Feature>
 
 type EnterSelection = Selection<EnterElement, Feature, SVGGElement, unknown>
 
+export type TerritoryScaleType = 'full' | 'europe'
+
 export class Territory extends Base {
   marginLeft = 0
 
@@ -84,7 +85,7 @@ export class Territory extends Base {
 
   VERSION = 'v1.1'
 
-  private view: 'full' | 'europe' = 'full'
+  private view: TerritoryScaleType = 'full'
 
   type: ViewTypes = 'confirmed'
 

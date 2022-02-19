@@ -38,6 +38,8 @@ type EnterBarSelection = Selection<
   unknown
 >
 
+export type RegionViewType = 'full' | 'inc'
+
 const int = format(',d')
 
 export class Region extends Base {
@@ -123,7 +125,7 @@ export class Region extends Base {
     this.popup.classed('show', false)
   }
 
-  public setType(type: 'full' | 'inc'): void {
+  public setType(type: RegionViewType): void {
     this.suffix = type === 'full' ? '' : 'Inc'
 
     this.updateDomains()
