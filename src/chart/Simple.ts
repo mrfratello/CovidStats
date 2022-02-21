@@ -2,8 +2,10 @@ import 'd3-transition'
 import { max } from 'd3-array'
 import { select } from 'd3-selection'
 import type { EnterElement, Selection } from 'd3-selection'
-import { scaleBand, scaleLinear, scalePow } from 'd3-scale'
-import type { ScaleBand, ScaleLinear, ScalePower } from 'd3-scale'
+import { scaleBand, scaleLinear, scalePow, scaleTime } from 'd3-scale'
+import type { ScaleBand, ScaleLinear, ScalePower, ScaleTime } from 'd3-scale'
+import { area, line } from 'd3-shape'
+import type { Area, Line } from 'd3-shape'
 import { axisRight, axisBottom } from 'd3-axis'
 import type { Axis } from 'd3-axis'
 import type { D3ZoomEvent } from 'd3-zoom'
@@ -11,7 +13,6 @@ import { shortDate as sortDateFn } from '../format/date'
 import dataset from '../Dataset'
 import { Base } from './Base'
 import { humanInt } from '../format/number'
-import { casesColor } from '../transition'
 import type { EnrichHistory, HistoryDay, HistoryMoment } from '../types'
 
 interface DataItem extends Pick<EnrichHistory, 'date'> {
@@ -24,6 +25,7 @@ interface DataItem extends Pick<EnrichHistory, 'date'> {
 type GroupBarSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>
 
 type BarSelection = Selection<SVGRectElement, DataItem, SVGGElement, unknown>
+type PathSelection = Selection<SVGPathElement, DataItem[], HTMLElement, unknown>
 type EnterBarSelection = Selection<EnterElement, DataItem, SVGGElement, unknown>
 
 const ChartTypeEnum = {
@@ -68,6 +70,8 @@ export class Simple extends Base {
 
   private timeScale: ScaleBand<string> = scaleBand()
 
+  private timeLinearScale: ScaleTime<number, number> = scaleTime()
+
   private countAxis: Axis<number> = axisRight<number>(this.countScale)
 
   private countAxisBox?: Selection<SVGGElement, unknown, HTMLElement, unknown>
@@ -80,9 +84,21 @@ export class Simple extends Base {
 
   private overBars?: BarSelection
 
+  private caseArea: Area<DataItem> = area()
+
+  private casePath?: PathSelection
+
   private caseGroup?: GroupBarSelection
 
+  private recoverLine: Line<DataItem> = line()
+
+  private recoverPath?: PathSelection
+
   private recoverGroup?: GroupBarSelection
+
+  private deathsLine: Line<DataItem> = line()
+
+  private deathsPath?: PathSelection
 
   private deathsGroup?: GroupBarSelection
 
@@ -130,6 +146,11 @@ export class Simple extends Base {
       this.marginTop,
     ])
 
+    this.timeLinearScale.range([
+      this.marginLeft,
+      Number(this.width) - this.marginRight,
+    ])
+
     this.powScale
       .exponent(0.4)
       .range([Number(this.height) - this.marginBottom, this.marginTop])
@@ -138,7 +159,7 @@ export class Simple extends Base {
       .padding(0.1)
       .range([this.marginLeft, Number(this.width) - this.marginRight])
 
-    const scaleProperty = `${this.scaleType}Scale` as 'linearScale' | 'powScale'
+    const scaleProperty = `${this.scaleType}Scale` as const
     this.countScale = this[scaleProperty]
   }
 
@@ -146,6 +167,10 @@ export class Simple extends Base {
     this.linearScale.domain([0, this.maxCount])
     this.powScale.domain([0, this.maxCount])
     this.timeScale.domain(this.dataset.map((item) => item.shortDate))
+    this.timeLinearScale.domain([
+      this.dataset[0].date,
+      this.dataset[this.dataset.length - 1].date,
+    ])
   }
 
   private updateRanges() {
@@ -158,6 +183,10 @@ export class Simple extends Base {
       this.marginTop,
     ])
     this.timeScale.range([
+      this.marginLeft,
+      Number(this.width) - this.marginRight,
+    ])
+    this.timeLinearScale.range([
       this.marginLeft,
       Number(this.width) - this.marginRight,
     ])
@@ -239,28 +268,34 @@ export class Simple extends Base {
       .append('g')
       .classed('cases', true)
       .attr('clip-path', `url(#clip-${this.id})`)
-    this.caseGroup
-      .selectAll<SVGRectElement, DataItem>('.caseBar')
-      .data(this.dataset, ({ shortDate }) => shortDate)
-      .join((enter) => this._enterCountBars(enter, 'caseBar'))
+
+    this.casePath = this.caseGroup
+      .append<SVGPathElement>('path')
+      .classed('caseArea', true)
+      .datum<DataItem[]>([])
+      .attr('d', this.caseArea)
 
     this.recoverGroup = this.svg
       .append('g')
       .classed('recover', true)
       .attr('clip-path', `url(#clip-${this.id})`)
-    this.recoverGroup
-      .selectAll<SVGRectElement, DataItem>('.recoverBar')
-      .data(this.dataset, ({ shortDate }) => shortDate)
-      .join((enter) => this._enterCountBars(enter, 'recoverBar'))
+
+    this.recoverPath = this.recoverGroup
+      .append<SVGPathElement>('path')
+      .classed('recoverLine', true)
+      .datum<DataItem[]>([])
+      .attr('d', this.recoverLine)
 
     this.deathsGroup = this.svg
       .append('g')
       .classed('deaths', true)
       .attr('clip-path', `url(#clip-${this.id})`)
-    this.deathsGroup
-      .selectAll<SVGRectElement, DataItem>('.deathsBar')
-      .data(this.dataset, ({ shortDate }) => shortDate)
-      .join((enter) => this._enterCountBars(enter, 'deathsBar'))
+
+    this.deathsPath = this.deathsGroup
+      .append<SVGPathElement>('path')
+      .classed('deathsLine', true)
+      .datum<DataItem[]>([])
+      .attr('d', this.deathsLine)
   }
 
   private updateBars() {
@@ -269,37 +304,36 @@ export class Simple extends Base {
       .data(this.dataset, ({ shortDate }) => shortDate)
       .call(this._updateOvers.bind(this))
 
-    this.caseGroup
-      ?.selectAll<SVGRectElement, DataItem>('.caseBar')
-      .data(this.dataset, ({ shortDate }) => shortDate)
-      .join((enter) => this._enterCountBars(enter, 'caseBar'))
-      .call(this._updateCountBars.bind(this), 'cases')
-    this.recoverGroup
-      ?.selectAll<SVGRectElement, DataItem>('.recoverBar')
-      .data(this.dataset, ({ shortDate }) => shortDate)
-      .join((enter) => this._enterCountBars(enter, 'recoverBar'))
-      .call(this._updateCountBars.bind(this), 'recover', 0.5)
-    this.deathsGroup
-      ?.selectAll<SVGRectElement, DataItem>('.deathsBar')
-      .data(this.dataset, ({ shortDate }) => shortDate)
-      .join((enter) => this._enterCountBars(enter, 'deathsBar'))
-      .call(this._updateCountBars.bind(this), 'deaths', 0.5)
+    this.caseArea
+      .x((d) => this.timeLinearScale(d.date))
+      .y0((d) => this.countScale(d.cases))
+      .y1(() => this.countScale.range()[0])
+    this.casePath
+      ?.datum(this.dataset)
+      .transition('base')
+      .attr('d', this.caseArea)
+
+    this.recoverLine
+      .x((d) => this.timeLinearScale(d.date))
+      .y((d) => this.countScale(d.recover))
+    this.recoverPath
+      ?.datum(this.dataset)
+      .transition('base')
+      .attr('d', this.recoverLine)
+
+    this.deathsLine
+      .x((d) => this.timeLinearScale(d.date))
+      .y((d) => this.countScale(d.deaths))
+    this.deathsPath
+      ?.datum<DataItem[]>(this.dataset)
+      .transition('base')
+      .attr('d', this.deathsLine)
   }
 
   private zoomBars() {
     this.overBars
       ?.selectAll<SVGRectElement, DataItem>('.overBar')
       .call(this._zoomBars.bind(this))
-
-    this.caseGroup
-      ?.selectAll<SVGRectElement, DataItem>('.caseBar')
-      .call(this._zoomBars.bind(this))
-    this.recoverGroup
-      ?.selectAll<SVGRectElement, DataItem>('.recoverBar')
-      .call(this._zoomBars.bind(this), 0.5)
-    this.deathsGroup
-      ?.selectAll<SVGRectElement, DataItem>('.deathsBar')
-      .call(this._zoomBars.bind(this), 0.5)
   }
 
   private _enterOvers(enter: EnterBarSelection) {
@@ -335,40 +369,6 @@ export class Simple extends Base {
       .attr('width', this.timeScale.bandwidth())
       .attr('y', this.countScale.range()[1])
       .attr('height', this.innerHeight ?? null)
-  }
-
-  private _enterCountBars(enter: EnterBarSelection, className: string) {
-    return enter
-      .append<SVGRectElement>('rect')
-      .classed(className, true)
-      .attr('x', ({ shortDate }) => this.timeScale(shortDate) ?? null)
-      .attr('width', this.timeScale.bandwidth())
-      .attr('y', this.countScale.range()[0])
-      .attr('height', 0)
-  }
-
-  private _updateCountBars(
-    update: BarSelection,
-    property: Property,
-    widthScale = 1,
-  ) {
-    const bandWidth = this.timeScale.bandwidth() * widthScale
-    const dx = this.timeScale.bandwidth() - bandWidth
-
-    return update
-      .transition('base')
-      .attr('x', ({ shortDate }) => this.timeScale(shortDate) ?? NaN + dx)
-      .attr('width', bandWidth)
-      .attr('y', (item) => this.countScale(item[property]))
-      .attr(
-        'height',
-        (item) => this.countScale(0) - this.countScale(item[property]),
-      )
-      .style('fill', (item) =>
-        property === 'cases' && this.type !== ChartTypeEnum.All
-          ? casesColor(item.cases / this.maxCount)
-          : null,
-      )
   }
 
   private _zoomBars(update: BarSelection, widthScale = 1) {
