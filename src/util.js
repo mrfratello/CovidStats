@@ -6,8 +6,10 @@ export const webpackReducer = {
   },
 }
 
-export const compose = (...functions) => (arg) =>
-  functions.reduce((composed, f) => f(composed), arg)
+export const compose =
+  (...functions) =>
+  (arg) =>
+    functions.reduce((composed, f) => f(composed), arg)
 
 export const debounce = (f, ms) => {
   let timeout = false

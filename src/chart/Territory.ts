@@ -52,9 +52,8 @@ interface RegionPropertyDto {
 
 type RegionFeatureDto = ExtendedFeature<GeoGeometryObjects, RegionPropertyDto>
 
-type RegionFeatureCollectionResponse = ExtendedFeatureCollection<
-  RegionFeatureDto
->
+type RegionFeatureCollectionResponse =
+  ExtendedFeatureCollection<RegionFeatureDto>
 
 interface RegionProperty extends RegionPropertyDto {
   stat: RegionData

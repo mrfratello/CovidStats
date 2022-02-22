@@ -231,7 +231,7 @@ export class PeriodOffset extends Base {
       .attr('clip-path', `url(#clip-${this.id})`)
 
     this.overBars = this.overBarsGroup
-      .selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
+      .selectAll<SVGRectElement, PeriodOffsetItem>('.over-bar')
       .data(this.dataset, (item) => item?.date.toDateString())
       .join((enter) => this._enterOvers(enter))
 
@@ -242,14 +242,14 @@ export class PeriodOffset extends Base {
 
     this.offsetsPath = this.offsetsGroup
       .append('path')
-      .classed('caseArea', true)
+      .classed('case-area', true)
       .datum<PeriodOffsetItem[]>([])
       .attr('d', this.offsetsArea)
   }
 
   private updateBars(): void {
     this.overBarsGroup
-      ?.selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
+      ?.selectAll<SVGRectElement, PeriodOffsetItem>('.over-bar')
       .data(this.dataset, ({ date }) => date.toDateString())
       .join(
         (enter) => this._enterOvers(enter),
@@ -271,7 +271,7 @@ export class PeriodOffset extends Base {
 
   private zoomBars(): void {
     this.overBars
-      ?.selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
+      ?.selectAll<SVGRectElement, PeriodOffsetItem>('.over-bar')
       .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
       .attr('width', this.timeScale.bandwidth())
   }
@@ -281,7 +281,7 @@ export class PeriodOffset extends Base {
 
     return enter
       .append<SVGRectElement>('rect')
-      .classed('overBar', true)
+      .classed('over-bar', true)
       .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
       .attr('y', () => this.countScale.range()[1] ?? null)
       .attr('width', this.timeScale.bandwidth() ?? null)

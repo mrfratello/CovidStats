@@ -129,7 +129,7 @@ export abstract class Base {
   protected renderInfo(updateTime: Date): void {
     this.svg
       .append('text')
-      .classed('updateTime', true)
+      .classed('update-time', true)
       .attr('x', this.marginLeft + 10)
       .attr('y', this.marginTop + 20)
       .text(`Обновлено ${fullDate(updateTime)}`)

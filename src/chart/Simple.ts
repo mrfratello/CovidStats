@@ -259,7 +259,7 @@ export class Simple extends Base {
       .attr('clip-path', `url(#clip-${this.id})`)
 
     this.overBars = this.overBarsGroup
-      .selectAll<SVGRectElement, DataItem>('.overBar')
+      .selectAll<SVGRectElement, DataItem>('.over-bar')
       .data(this.dataset, ({ shortDate }) => shortDate)
       .join((enter) => this._enterOvers(enter))
       .call(this._updateOvers.bind(this))
@@ -271,7 +271,7 @@ export class Simple extends Base {
 
     this.casePath = this.caseGroup
       .append<SVGPathElement>('path')
-      .classed('caseArea', true)
+      .classed('case-area', true)
       .datum<DataItem[]>([])
       .attr('d', this.caseArea)
 
@@ -282,7 +282,7 @@ export class Simple extends Base {
 
     this.recoverPath = this.recoverGroup
       .append<SVGPathElement>('path')
-      .classed('recoverLine', true)
+      .classed('recover-line', true)
       .datum<DataItem[]>([])
       .attr('d', this.recoverLine)
 
@@ -293,14 +293,14 @@ export class Simple extends Base {
 
     this.deathsPath = this.deathsGroup
       .append<SVGPathElement>('path')
-      .classed('deathsLine', true)
+      .classed('deaths-line', true)
       .datum<DataItem[]>([])
       .attr('d', this.deathsLine)
   }
 
   private updateBars() {
     this.overBarsGroup
-      ?.selectAll<SVGRectElement, DataItem>('.overBar')
+      ?.selectAll<SVGRectElement, DataItem>('.over-bar')
       .data(this.dataset, ({ shortDate }) => shortDate)
       .call(this._updateOvers.bind(this))
 
@@ -332,7 +332,7 @@ export class Simple extends Base {
 
   private zoomBars() {
     this.overBars
-      ?.selectAll<SVGRectElement, DataItem>('.overBar')
+      ?.selectAll<SVGRectElement, DataItem>('.over-bar')
       .call(this._zoomBars.bind(this))
   }
 
@@ -340,7 +340,7 @@ export class Simple extends Base {
     const me = this
     return enter
       .append('rect')
-      .classed('overBar', true)
+      .classed('over-bar', true)
       .on('mouseover', function (_event, data) {
         const index = me.dataset.indexOf(data)
         const rect = select(this)

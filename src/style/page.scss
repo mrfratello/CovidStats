@@ -1,0 +1,115 @@
+$nav-bar-height: 56px;
+
+.screen {
+  $padding: 20px;
+
+  min-height: 100vh;
+  padding-top: $padding;
+  padding-bottom: $padding;
+
+  &_top {
+    margin-top: -$nav-bar-height;
+    padding-top: $nav-bar-height + $padding;
+  }
+}
+
+.covid-background {
+  background: url('./covids.jpg') no-repeat 50% 100%;
+  padding-bottom: 300px;
+}
+
+.form-btn-group {
+  padding-top: $input-btn-padding-y;
+  padding-bottom: $input-btn-padding-y;
+}
+
+.hide-controls {
+  .control {
+    visibility: hidden;
+  }
+}
+
+@media (min-width: 768px) and (min-height: 480px) {
+  .content {
+    p {
+      width: 70%;
+    }
+  }
+}
+
+#chart,
+#period-offset-chart,
+#region-chart {
+  min-height: 250px;
+  max-height: 350px;
+  flex-grow: 1;
+}
+
+.chart {
+  position: relative;
+
+  svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}
+
+.loading {
+  position: absolute;
+  display: table;
+  height: 100%;
+  width: 100%;
+  z-index: 100;
+  background-color: #fff;
+
+  .loaded & {
+    display: none;
+  }
+
+  &-content {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    font-style: italic;
+  }
+}
+
+label {
+  cursor: pointer;
+}
+
+.wrapper {
+  position: relative;
+
+  .popup {
+    position: absolute;
+    background: #fff;
+    top: $nav-bar-height;
+    width: 100%;
+    z-index: 100;
+    visibility: hidden;
+    box-shadow: 0 1px 5px rgb(0 0 0 / 30%);
+
+    &.show {
+      visibility: visible;
+    }
+
+    .close {
+      float: none;
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 3rem;
+      font-weight: 400;
+      text-shadow: none;
+      opacity: 0.7;
+      margin-top: 0.5rem;
+      margin-right: 1rem;
+    }
+
+    h2 {
+      margin-right: 2rem;
+    }
+  }
+}

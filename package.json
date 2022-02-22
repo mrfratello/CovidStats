@@ -31,20 +31,20 @@
     "@types/d3-transition": "3.0.1",
     "@types/d3-zoom": "3.0.1",
     "@types/gtag.js": "0.0.8",
-    "@typescript-eslint/eslint-plugin": "5.12.0",
-    "@typescript-eslint/parser": "5.12.0",
+    "@typescript-eslint/eslint-plugin": "5.12.1",
+    "@typescript-eslint/parser": "5.12.1",
     "autoprefixer": "^9.7.5",
     "eslint": "8.9.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-airbnb-typescript": "16.1.0",
-    "eslint-config-prettier": "8.3.0",
+    "eslint-config-prettier": "8.4.0",
     "eslint-plugin-import": "2.25.4",
     "parcel": "2.3.2",
-    "prettier": "2.1.2",
+    "prettier": "2.5.1",
     "process": "0.11.10",
-    "stylelint": "^13.7.2",
-    "stylelint-config-standard": "^20.0.0",
-    "stylelint-scss": "^3.18.0",
+    "stylelint": "14.5.2",
+    "stylelint-config-prettier-scss": "0.0.1",
+    "stylelint-config-standard-scss": "3.0.0",
     "typescript": "4.5.5"
   },
   "dependencies": {
@@ -66,7 +66,7 @@
     "d3-zoom": "3.0.0",
     "ismobilejs": "^1.1.1",
     "resize-observer-polyfill": "1.5.1",
-    "sass": "1.49.7",
+    "sass": "1.49.8",
     "web-vitals": "2.1.4"
   }
 }

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $cases-color: #fc3;
 $recover-color: #3c9;
 $deaths-color: #f66;
@@ -7,13 +9,13 @@ $deaths-color: #f66;
 }
 
 .chart {
-  .updateTime {
+  .update-time {
     fill: #9f9f9f;
     font-size: 10px;
     font-style: italic;
   }
 
-  .overBar {
+  .over-bar {
     fill: transparent;
 
     &:hover {
@@ -22,24 +24,14 @@ $deaths-color: #f66;
   }
 
   .cases {
-    .caseBar {
-      fill: $cases-color;
-      pointer-events: none;
-    }
-
-    .caseArea {
-      fill: transparentize($color: $cases-color, $amount: 0.25);
+    .case-area {
+      fill: color.adjust($cases-color, $alpha: -0.25);
       pointer-events: none;
     }
   }
 
   .recover {
-    .recoverBar {
-      fill: $recover-color;
-      pointer-events: none;
-    }
-
-    .recoverLine {
+    .recover-line {
       fill: none;
       stroke: $recover-color;
       stroke-width: 1.2;
@@ -48,12 +40,7 @@ $deaths-color: #f66;
   }
 
   .deaths {
-    .deathsBar {
-      fill: $deaths-color;
-      pointer-events: none;
-    }
-
-    .deathsLine {
+    .deaths-line {
       fill: none;
       stroke: $deaths-color;
       stroke-width: 1.2;
@@ -68,7 +55,7 @@ $deaths-color: #f66;
   z-index: 100;
   font-size: 12px;
   line-height: 1;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgb(255 255 255 / 80%);
   padding: 3px;
   text-align: right;
   top: 0;
@@ -90,8 +77,8 @@ $deaths-color: #f66;
   }
 }
 
-.typeDescription,
-.offsetTypeDescription {
+.type-description,
+.offset-type-description {
   display: none;
 
   &.active {
@@ -107,7 +94,7 @@ $deaths-color: #f66;
   flex-grow: 1;
 
   svg {
-    background: lighten($territory-stroke-color, 30%);
+    background: color.adjust($territory-stroke-color, $lightness: 30%);
   }
 
   .region {
@@ -117,7 +104,7 @@ $deaths-color: #f66;
     stroke-opacity: 0.5;
 
     &:hover {
-      stroke: darken($territory-stroke-color, 50%);
+      stroke: color.adjust($territory-stroke-color, $lightness: -50%);
       stroke-opacity: 1;
       z-index: 100;
     }

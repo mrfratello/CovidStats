@@ -29,7 +29,7 @@ function renderSimpleChart() {
       selectAll<HTMLButtonElement, unknown>('.chartTypeBtn').each(function () {
         select(this).classed('active', this.dataset.value === chartType)
       })
-      selectAll<HTMLParagraphElement, unknown>('.typeDescription').each(
+      selectAll<HTMLParagraphElement, unknown>('.type-description').each(
         function () {
           select(this).classed('active', this.dataset.type === chartType)
         },
@@ -51,7 +51,7 @@ function renderPeriodChart() {
           select(this).classed('active', this.dataset.value === chartType)
         },
       )
-      selectAll<HTMLParagraphElement, unknown>('.offsetTypeDescription').each(
+      selectAll<HTMLParagraphElement, unknown>('.offset-type-description').each(
         function () {
           select(this).classed('active', this.dataset.type === chartType)
         },

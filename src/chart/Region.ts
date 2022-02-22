@@ -273,7 +273,7 @@ export class Region extends Base {
       .attr('clip-path', `url(#clip-${this.id})`)
 
     this.overBarsGroup
-      .selectAll<SVGRectElement, RegionHistory>('.overBar')
+      .selectAll<SVGRectElement, RegionHistory>('.over-bar')
       .data(this.history, ({ date }) => date)
       .join((enter) => this._enterOvers(enter))
 
@@ -284,7 +284,7 @@ export class Region extends Base {
 
     this.confirmedPath = this.confirmedBarsGroup
       .append('path')
-      .classed('caseArea', true)
+      .classed('case-area', true)
       .datum<RegionHistory[]>([])
       .attr('d', this.confirmedArea)
   }
@@ -318,7 +318,7 @@ export class Region extends Base {
 
   private updateBars(): void {
     this.overBarsGroup
-      ?.selectAll<SVGRectElement, RegionHistory>('.overBar')
+      ?.selectAll<SVGRectElement, RegionHistory>('.over-bar')
       .data(this.history, ({ date }) => date)
       .join((enter) => this._enterOvers(enter))
       .call(this._updateOvers.bind(this))
@@ -335,7 +335,7 @@ export class Region extends Base {
 
   private zoomBars(): void {
     this.overBarsGroup
-      ?.selectAll<SVGRectElement, RegionHistory>('.overBar')
+      ?.selectAll<SVGRectElement, RegionHistory>('.over-bar')
       .call(this._zoomBars.bind(this))
   }
 
@@ -344,7 +344,7 @@ export class Region extends Base {
 
     return enter
       .append('rect')
-      .classed('overBar', true)
+      .classed('over-bar', true)
       .on('mouseover', function (_event, data) {
         const rect = select(this)
         const history = me.getHistory()
