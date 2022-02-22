@@ -1,16 +1,17 @@
 import 'd3-transition'
 import { max } from 'd3-array'
 import { select } from 'd3-selection'
-import { scaleBand, scaleLinear } from 'd3-scale'
+import { scaleBand, scaleLinear, scaleTime } from 'd3-scale'
 import { axisRight, axisBottom } from 'd3-axis'
 import { format } from 'd3-format'
 import type { Selection, EnterElement } from 'd3-selection'
+import { area } from 'd3-shape'
 import type { Axis } from 'd3-axis'
-import type { ScaleLinear, ScaleBand } from 'd3-scale'
+import type { ScaleLinear, ScaleBand, ScaleTime } from 'd3-scale'
+import type { Area } from 'd3-shape'
 import type { D3ZoomEvent } from 'd3-zoom'
 import { shortDate, serverShortToDate } from '../format/date'
 import { humanInt } from '../format/number'
-import { casesColor } from '../transition'
 import { Base } from './Base'
 
 import type {
@@ -21,9 +22,16 @@ import type {
 
 interface RegionHistory extends Pick<HistoryTerritory, 'date' | 'confirmed'> {
   confirmedInc: number
+  dateTime: Date
 }
 
 type GroupBarSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>
+type PathSelection = Selection<
+  SVGPathElement,
+  RegionHistory[],
+  HTMLElement,
+  unknown
+>
 
 type BarSelection = Selection<
   SVGRectElement,
@@ -63,6 +71,8 @@ export class Region extends Base {
 
   private timeScale: ScaleBand<string> = scaleBand()
 
+  private timeLinearScale: ScaleTime<number, number> = scaleTime()
+
   private countAxis: Axis<number> = axisRight<number>(this.countScale)
 
   private countAxisBox?: Selection<SVGGElement, unknown, HTMLElement, unknown>
@@ -75,9 +85,11 @@ export class Region extends Base {
 
   private confirmedBarsGroup?: GroupBarSelection
 
-  private _didSet = false
+  private confirmedArea: Area<RegionHistory> = area()
 
-  private maxInc = 0
+  private confirmedPath?: PathSelection
+
+  private _didSet = false
 
   constructor(selector: string) {
     super(selector)
@@ -138,22 +150,23 @@ export class Region extends Base {
       {
         ...history[0],
         confirmedInc: 0,
+        dateTime: new Date(),
       },
     ]
     this.history = history
       .reduce<RegionHistory[]>((res, item) => {
         const prev = res[res.length - 1]
         const inc = item.confirmed - prev.confirmed
+        const dateTime = serverShortToDate(item.date)!
         res.push({
-          date: shortDate(serverShortToDate(item.date)!),
+          dateTime,
+          date: shortDate(dateTime),
           confirmed: item.confirmed,
           confirmedInc: inc >= 0 ? inc : 0,
         })
         return res
       }, initial)
       .slice(1)
-
-    this.maxInc = max(this.history, (d) => d.confirmedInc) ?? 0
   }
 
   private renderData(data: RegionData): void {
@@ -247,6 +260,11 @@ export class Region extends Base {
     this.timeScale
       .padding(0.1)
       .range([this.marginLeft, Number(this.width) - this.marginRight])
+
+    this.timeLinearScale.range([
+      this.marginLeft,
+      Number(this.width) - this.marginRight,
+    ])
   }
 
   private renderBars(): void {
@@ -264,10 +282,11 @@ export class Region extends Base {
       .classed('cases', true)
       .attr('clip-path', `url(#clip-${this.id})`)
 
-    this.confirmedBarsGroup
-      .selectAll<SVGRectElement, RegionHistory>('.caseBar')
-      .data(this.history, ({ date }) => date)
-      .join((enter) => this._enterCases(enter))
+    this.confirmedPath = this.confirmedBarsGroup
+      .append('path')
+      .classed('caseArea', true)
+      .datum<RegionHistory[]>([])
+      .attr('d', this.confirmedArea)
   }
 
   private updateDomains() {
@@ -276,6 +295,10 @@ export class Region extends Base {
 
     this.countScale.domain([0, maxCount])
     this.timeScale.domain(this.history.map((item) => item.date))
+    this.timeLinearScale.domain([
+      this.history[0].dateTime,
+      this.history[this.history.length - 1].dateTime,
+    ])
   }
 
   private updateRanges() {
@@ -284,6 +307,10 @@ export class Region extends Base {
       this.marginTop,
     ])
     this.timeScale.range([
+      this.marginLeft,
+      Number(this.width) - this.marginRight,
+    ])
+    this.timeLinearScale.range([
       this.marginLeft,
       Number(this.width) - this.marginRight,
     ])
@@ -296,20 +323,19 @@ export class Region extends Base {
       .join((enter) => this._enterOvers(enter))
       .call(this._updateOvers.bind(this))
 
-    this.confirmedBarsGroup
-      ?.selectAll<SVGRectElement, RegionHistory>('.caseBar')
-      .data(this.history, ({ date }) => date)
-      .join((enter) => this._enterCases(enter))
-      .call(this._updateCases.bind(this))
+    this.confirmedArea
+      .x((d) => this.timeLinearScale(d.dateTime))
+      .y0((d) => this.countScale(d[`confirmed${this.suffix}`]))
+      .y1(() => this.countScale.range()[0])
+    this.confirmedPath
+      ?.datum(this.history)
+      .transition('base')
+      .attr('d', this.confirmedArea)
   }
 
   private zoomBars(): void {
     this.overBarsGroup
       ?.selectAll<SVGRectElement, RegionHistory>('.overBar')
-      .call(this._zoomBars.bind(this))
-
-    this.confirmedBarsGroup
-      ?.selectAll<SVGRectElement, RegionHistory>('.caseBar')
       .call(this._zoomBars.bind(this))
   }
 
@@ -342,36 +368,12 @@ export class Region extends Base {
       })
   }
 
-  private _enterCases(enter: EnterBarSelection) {
-    return enter
-      .append<SVGRectElement>('rect')
-      .classed('caseBar', true)
-      .attr('x', ({ date }) => this.timeScale(date) ?? null)
-      .attr('y', () => this.countScale.range()[0])
-      .attr('width', this.timeScale.bandwidth())
-      .attr('height', 0)
-  }
-
   private _updateOvers(update: BarSelection) {
     return update
       .attr('x', ({ date }) => this.timeScale(date) ?? null)
       .attr('width', this.timeScale.bandwidth())
       .attr('y', () => this.countScale.range()[1])
       .attr('height', () => this.innerHeight ?? null)
-  }
-
-  private _updateCases(update: BarSelection) {
-    return update
-      .transition('base')
-      .attr('x', ({ date }) => this.timeScale(date) ?? null)
-      .attr('width', this.timeScale.bandwidth())
-      .attr('y', (item) => this.countScale(item[`confirmed${this.suffix}`]))
-      .attr(
-        'height',
-        (item) =>
-          this.countScale(0) - this.countScale(item[`confirmed${this.suffix}`]),
-      )
-      .style('fill', (item) => casesColor(item.confirmedInc / this.maxInc))
   }
 
   private _zoomBars(update: BarSelection) {

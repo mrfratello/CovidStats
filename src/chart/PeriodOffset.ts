@@ -2,10 +2,12 @@ import 'd3-transition'
 import { select } from 'd3-selection'
 import { max } from 'd3-array'
 import { axisRight, axisBottom } from 'd3-axis'
-import { scaleBand, scaleLinear } from 'd3-scale'
+import { scaleBand, scaleLinear, scaleTime } from 'd3-scale'
 import type { Selection, EnterElement } from 'd3-selection'
+import { area } from 'd3-shape'
+import type { Area } from 'd3-shape'
 import type { Axis } from 'd3-axis'
-import type { ScaleLinear, ScaleBand } from 'd3-scale'
+import type { ScaleLinear, ScaleBand, ScaleTime } from 'd3-scale'
 import type { D3ZoomEvent } from 'd3-zoom'
 import { humanInt } from '../format/number'
 import { shortDate } from '../format/date'
@@ -21,6 +23,12 @@ interface PeriodOffsetItem {
 }
 
 type GroupBarSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>
+type PathSelection = Selection<
+  SVGPathElement,
+  PeriodOffsetItem[],
+  HTMLElement,
+  unknown
+>
 type BarSelection = Selection<
   SVGRectElement,
   PeriodOffsetItem,
@@ -53,6 +61,8 @@ export class PeriodOffset extends Base {
 
   private timeScale: ScaleBand<string> = scaleBand()
 
+  private timeLinearScale: ScaleTime<number, number> = scaleTime()
+
   private countAxis: Axis<number> = axisRight<number>(scaleLinear())
 
   private countAxisBox?: Selection<SVGGElement, unknown, HTMLElement, unknown>
@@ -67,7 +77,9 @@ export class PeriodOffset extends Base {
 
   private offsetsGroup?: GroupBarSelection
 
-  private offsets?: BarSelection
+  private offsetsArea: Area<PeriodOffsetItem> = area()
+
+  private offsetsPath?: PathSelection
 
   constructor(selector: string) {
     super(selector)
@@ -129,6 +141,11 @@ export class PeriodOffset extends Base {
     this.timeScale
       .range([this.marginLeft, Number(this.width) - this.marginRight])
       .padding(0.1)
+
+    this.timeLinearScale.range([
+      this.marginLeft,
+      Number(this.width) - this.marginRight,
+    ])
   }
 
   private updateDomains(): void {
@@ -136,6 +153,10 @@ export class PeriodOffset extends Base {
       (max(this.dataset, (item) => item[this.type]) as number) * 1.05
     this.countScale.domain([0, maxCount]).nice()
     this.timeScale.domain(this.dataset.map((item) => shortDate(item.date)))
+    this.timeLinearScale.domain([
+      this.dataset[0].date,
+      this.dataset[this.dataset.length - 1].date,
+    ])
   }
 
   private updateRanges(): void {
@@ -144,6 +165,11 @@ export class PeriodOffset extends Base {
       this.marginTop,
     ])
     this.timeScale.range([
+      this.marginLeft,
+      Number(this.width) - this.marginRight,
+    ])
+
+    this.timeLinearScale.range([
       this.marginLeft,
       Number(this.width) - this.marginRight,
     ])
@@ -214,10 +240,11 @@ export class PeriodOffset extends Base {
       .classed('cases', true)
       .attr('clip-path', `url(#clip-${this.id})`)
 
-    this.offsets = this.offsetsGroup
-      .selectAll<SVGRectElement, PeriodOffsetItem>('.caseBar')
-      .data(this.dataset, ({ date }) => date.toDateString())
-      .join((enter) => this._enterCases(enter))
+    this.offsetsPath = this.offsetsGroup
+      .append('path')
+      .classed('caseArea', true)
+      .datum<PeriodOffsetItem[]>([])
+      .attr('d', this.offsetsArea)
   }
 
   private updateBars(): void {
@@ -231,37 +258,22 @@ export class PeriodOffset extends Base {
       )
       .call(this.updateOvers.bind(this))
 
-    this.offsetsGroup
-      ?.selectAll<SVGRectElement, PeriodOffsetItem>('.caseBar')
-      .data(this.dataset, ({ date }) => date.toDateString())
-      .join(
-        (enter) => this._enterCases(enter),
-        (update) => update,
-        (exit) =>
-          exit
-            .transition('base')
-            .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? 0 + 100)
-            .remove(),
-      )
-      .call(this.updateCases.bind(this))
+    this.offsetsArea
+      .x((d) => this.timeLinearScale(d.date))
+      .y0((d) => this.countScale(d[this.type]))
+      .y1(() => this.countScale.range()[0])
+
+    this.offsetsPath
+      ?.datum(this.dataset)
+      .transition('base')
+      .attr('d', this.offsetsArea)
   }
 
   private zoomBars(): void {
-    const bandWidth = this.timeScale.bandwidth()
-
-    if (this.overBars) {
-      this.overBars
-        .selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
-        .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-        .attr('width', this.timeScale.bandwidth())
-    }
-
-    if (this.offsets) {
-      this.offsets
-        .selectAll<SVGRectElement, PeriodOffsetItem>('.caseBar')
-        .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-        .attr('width', bandWidth)
-    }
+    this.overBars
+      ?.selectAll<SVGRectElement, PeriodOffsetItem>('.overBar')
+      .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
+      .attr('width', this.timeScale.bandwidth())
   }
 
   private _enterOvers(enter: BarEnterSelection): BarSelection {
@@ -297,34 +309,12 @@ export class PeriodOffset extends Base {
       })
   }
 
-  private _enterCases(enter: BarEnterSelection): BarSelection {
-    return enter
-      .append<SVGRectElement>('rect')
-      .classed('caseBar', true)
-      .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-      .attr('y', this.countScale.range()[0])
-      .attr('width', this.timeScale.bandwidth() / 2)
-      .attr('height', 0)
-  }
-
   private updateOvers(update: BarSelection) {
     return update
       .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
       .attr('width', this.timeScale.bandwidth())
       .attr('y', () => this.countScale.range()[1])
       .attr('height', this.innerHeight!)
-  }
-
-  private updateCases(update: BarSelection) {
-    return update
-      .transition('base')
-      .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-      .attr('width', this.timeScale.bandwidth())
-      .attr('y', (item) => this.countScale(item[this.type]))
-      .attr('height', (item) => {
-        const height = this.countScale(0) - this.countScale(item[this.type])
-        return height < 0 ? 0 : height
-      })
   }
 
   public onResize(): void {
