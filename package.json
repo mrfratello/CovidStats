@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "start": "parcel src/index.html",
-    "build": "parcel build src/index.html",
+    "build": "parcel build --no-content-hash src/index.html",
     "deploy": "npm run build && scp -r dist/. syoxyz:public_html/covid",
     "tslint": "tsc --noEmit",
     "eslint": "eslint src --ext .js,.ts",
@@ -33,7 +33,6 @@
     "@types/gtag.js": "0.0.8",
     "@typescript-eslint/eslint-plugin": "5.12.1",
     "@typescript-eslint/parser": "5.12.1",
-    "autoprefixer": "^9.7.5",
     "eslint": "8.9.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-airbnb-typescript": "16.1.0",
