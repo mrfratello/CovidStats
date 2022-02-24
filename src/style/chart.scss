@@ -23,6 +23,25 @@ $deaths-color: #f66;
     }
   }
 
+  .over-group {
+    .over-line {
+      stroke: #bcbaba;
+      stroke-width: 0.5;
+    }
+
+    .over-line-hidden {
+      display: none;
+    }
+
+    .point {
+      r: 2;
+    }
+
+    .point-cases {
+      fill: color.scale($cases-color, $lightness: -20%);
+    }
+  }
+
   .cases {
     .case-area {
       fill: color.adjust($cases-color, $alpha: -0.25);

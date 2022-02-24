@@ -1,9 +1,9 @@
 import 'd3-transition'
-import { select } from 'd3-selection'
-import { max } from 'd3-array'
+import { pointer } from 'd3-selection'
+import { bisector, max } from 'd3-array'
 import { axisRight, axisBottom } from 'd3-axis'
 import { scaleBand, scaleLinear, scaleTime } from 'd3-scale'
-import type { Selection, EnterElement } from 'd3-selection'
+import type { Selection } from 'd3-selection'
 import { area } from 'd3-shape'
 import type { Area } from 'd3-shape'
 import type { Axis } from 'd3-axis'
@@ -29,20 +29,11 @@ type PathSelection = Selection<
   HTMLElement,
   unknown
 >
-type BarSelection = Selection<
-  SVGRectElement,
-  PeriodOffsetItem,
-  SVGGElement,
-  unknown
->
-type BarEnterSelection = Selection<
-  EnterElement,
-  PeriodOffsetItem,
-  SVGGElement,
-  unknown
->
+type LineSelection = Selection<SVGLineElement, unknown, HTMLElement, unknown>
 
 export type PeriosOffsetChartType = 'recoveryPeriod' | 'activePatients'
+
+const bisectDate = bisector((d: PeriodOffsetItem) => d.date).center
 
 export class PeriodOffset extends Base {
   marginBottom = 80
@@ -71,15 +62,15 @@ export class PeriodOffset extends Base {
 
   private timeAxisBox?: Selection<SVGGElement, unknown, HTMLElement, unknown>
 
-  private overBarsGroup?: GroupBarSelection
-
-  private overBars?: BarSelection
-
   private offsetsGroup?: GroupBarSelection
 
   private offsetsArea: Area<PeriodOffsetItem> = area()
 
   private offsetsPath?: PathSelection
+
+  private overGroup?: GroupBarSelection
+
+  private overLine?: LineSelection
 
   constructor(selector: string) {
     super(selector)
@@ -90,6 +81,59 @@ export class PeriodOffset extends Base {
       this.render(data)
       this.renderInfo(updateDate)
     })
+  }
+
+  private initTooltip() {
+    this.overGroup = this.svg
+      .append('g')
+      .classed('over-group', true)
+      .attr('transform', `translate(0, 0)`)
+
+    this.overLine = this.overGroup
+      .append('line')
+      .classed('over-line over-line-hidden', true)
+      .attr('y1', Number(this.height) - this.marginBottom)
+      .attr('y2', 0)
+
+    this.svg
+      .on('pointerenter pointermove', this.onPointerOver.bind(this))
+      .on('pointerleave', this.onPointerLeave.bind(this))
+  }
+
+  private onPointerOver(event: PointerEvent): void {
+    const [overX] = pointer(event)
+    const overDate = this.timeLinearScale.invert(overX)
+    const i = bisectDate(this.dataset, overDate)
+    const data = this.dataset[i]
+    const x = this.timeLinearScale(data.date)
+    this.overGroup
+      ?.attr('transform', `translate(${x}, 0)`)
+      .selectAll('.point')
+      .data([{ value: data[this.type], cases: true }])
+      .join('circle')
+      .classed('point', true)
+      .classed('point-cases', (d) => d.cases)
+      .attr('cy', (d) => this.countScale(d.value))
+    this.overLine?.classed('over-line-hidden', false)
+
+    this.tooltip.show({
+      data: { cases: data[this.type] < 0 ? 0 : data[this.type] },
+      right:
+        i > this.dataset.length / 2
+          ? `${Number(this.width) - x + 5}px`
+          : 'auto',
+      left: i <= this.dataset.length / 2 ? `${x + 5}px` : 'auto',
+    })
+  }
+
+  private onPointerLeave(): void {
+    this.overGroup?.selectAll('.point').data([]).join('circle')
+    this.overLine?.classed('over-line-hidden', true)
+    this.tooltip.hide()
+  }
+
+  private zoomOver(): void {
+    this.overLine?.attr('y1', Number(this.height) - this.marginBottom)
   }
 
   private render(data: EnrichHistory[]): void {
@@ -103,6 +147,7 @@ export class PeriodOffset extends Base {
     this.updateDomains()
     this.renderBars()
     this.renderAxes()
+    this.initTooltip()
     this.updateBars()
     this.updateAxes()
   }
@@ -192,15 +237,10 @@ export class PeriodOffset extends Base {
   private updateAxes(): void {
     this.countAxis.scale(this.countScale)
 
-    if (this.countAxisBox) {
-      this.countAxisBox
-        .transition('base')
-        .attr(
-          'transform',
-          `translate(${this.marginLeft + this.innerWidth!}, 0)`,
-        )
-        .call(this.countAxis)
-    }
+    this.countAxisBox
+      ?.transition('base')
+      .attr('transform', `translate(${this.marginLeft + this.innerWidth!}, 0)`)
+      .call(this.countAxis)
 
     const tickTextOverBars = Math.ceil(
       this.maxTickWidth / this.timeScale.bandwidth(),
@@ -226,15 +266,6 @@ export class PeriodOffset extends Base {
   }
 
   private renderBars(): void {
-    this.overBarsGroup = this.svg
-      .append('g')
-      .attr('clip-path', `url(#clip-${this.id})`)
-
-    this.overBars = this.overBarsGroup
-      .selectAll<SVGRectElement, PeriodOffsetItem>('.over-bar')
-      .data(this.dataset, (item) => item?.date.toDateString())
-      .join((enter) => this._enterOvers(enter))
-
     this.offsetsGroup = this.svg
       .append('g')
       .classed('cases', true)
@@ -248,16 +279,6 @@ export class PeriodOffset extends Base {
   }
 
   private updateBars(): void {
-    this.overBarsGroup
-      ?.selectAll<SVGRectElement, PeriodOffsetItem>('.over-bar')
-      .data(this.dataset, ({ date }) => date.toDateString())
-      .join(
-        (enter) => this._enterOvers(enter),
-        (update) => update,
-        (exit) => exit.remove(),
-      )
-      .call(this.updateOvers.bind(this))
-
     this.offsetsArea
       .x((d) => this.timeLinearScale(d.date))
       .y0((d) => this.countScale(d[this.type]))
@@ -267,54 +288,6 @@ export class PeriodOffset extends Base {
       ?.datum(this.dataset)
       .transition('base')
       .attr('d', this.offsetsArea)
-  }
-
-  private zoomBars(): void {
-    this.overBars
-      ?.selectAll<SVGRectElement, PeriodOffsetItem>('.over-bar')
-      .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-      .attr('width', this.timeScale.bandwidth())
-  }
-
-  private _enterOvers(enter: BarEnterSelection): BarSelection {
-    const me = this
-
-    return enter
-      .append<SVGRectElement>('rect')
-      .classed('over-bar', true)
-      .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-      .attr('y', () => this.countScale.range()[1] ?? null)
-      .attr('width', this.timeScale.bandwidth() ?? null)
-      .attr('height', () => this.innerHeight ?? null)
-      .on('mouseover', function (_event, data) {
-        const index = me.dataset.indexOf(data)
-        const rect = select(this)
-        me.tooltip.show({
-          data: {
-            cases: data[me.type] < 0 ? 0 : data[me.type],
-            recover: null,
-            deaths: null,
-          },
-          right:
-            index > me.dataset.length / 2
-              ? `${
-                  Number(me.width) - (+rect.attr('x') + +rect.attr('width'))
-                }px`
-              : 'auto',
-          left: index <= me.dataset.length / 2 ? `${rect.attr('x')}px` : 'auto',
-        })
-      })
-      .on('mouseout', () => {
-        me.tooltip.hide()
-      })
-  }
-
-  private updateOvers(update: BarSelection) {
-    return update
-      .attr('x', ({ date }) => this.timeScale(shortDate(date)) ?? null)
-      .attr('width', this.timeScale.bandwidth())
-      .attr('y', () => this.countScale.range()[1])
-      .attr('height', this.innerHeight!)
   }
 
   public onResize(): void {
@@ -343,14 +316,13 @@ export class PeriodOffset extends Base {
   }
 
   public onZoom(event: D3ZoomEvent<SVGElement, unknown>): void {
-    const range = [
-      this.marginLeft,
-      Number(this.width) - this.marginRight,
-    ].map((d) => event.transform.applyX(d))
+    const range = [this.marginLeft, Number(this.width) - this.marginRight].map(
+      (d) => event.transform.applyX(d),
+    )
     this.timeScale.range(range)
     if (this.timeAxisBox) {
       this.timeAxisBox.call(this.timeAxis)
     }
-    this.zoomBars()
+    this.zoomOver()
   }
 }

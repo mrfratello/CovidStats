@@ -30,6 +30,8 @@ export class Tooltip {
     left = 'auto',
   }: ShowProps): void {
     this.box.classed('active', true).style('left', left).style('right', right)
+    // TODO use .data() for render values
+    this.box.selectAll('.value').remove()
 
     if (cases !== null) {
       this.box.append('div').classed('cases value', true).text(int(cases))
