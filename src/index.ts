@@ -1,5 +1,6 @@
-import './webVitals'
+import './monitoring'
 import { selectAll, select } from 'd3-selection'
+import { version } from '../package.json'
 import './format'
 import './ui/navbar'
 import './ui/scrollLink'
@@ -7,6 +8,8 @@ import { Simple as SimpleChart } from './chart/Simple'
 import type { SimpleChartType, SimpleScaleType } from './chart/Simple'
 import { PeriodOffset as PeriodChart } from './chart/PeriodOffset'
 import type { PeriosOffsetChartType } from './chart/PeriodOffset'
+
+select('.version').text(version)
 
 function renderSimpleChart() {
   const simpleChart = new SimpleChart('chart')

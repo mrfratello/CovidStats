@@ -1,4 +1,4 @@
-import './webVitals'
+import './monitoring'
 import { selectAll, select } from 'd3-selection'
 import './format'
 import './ui/navbar'
