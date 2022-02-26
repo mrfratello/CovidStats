@@ -1,20 +1,23 @@
 import 'd3-transition'
-import { pointer } from 'd3-selection'
+import { pointer, type Selection } from 'd3-selection'
 import { bisector, max } from 'd3-array'
-import { axisRight, axisBottom } from 'd3-axis'
-import { scaleBand, scaleLinear, scaleTime } from 'd3-scale'
-import type { Selection } from 'd3-selection'
-import { area } from 'd3-shape'
-import type { Area } from 'd3-shape'
-import type { Axis } from 'd3-axis'
-import type { ScaleLinear, ScaleBand, ScaleTime } from 'd3-scale'
-import type { D3ZoomEvent } from 'd3-zoom'
+import { axisRight, axisBottom, type Axis } from 'd3-axis'
+import {
+  scaleBand,
+  type ScaleBand,
+  scaleLinear,
+  type ScaleLinear,
+  scaleTime,
+  type ScaleTime,
+} from 'd3-scale'
+import { area, type Area } from 'd3-shape'
+import { type D3ZoomEvent } from 'd3-zoom'
 import { humanInt } from '../format/number'
 import { shortDate } from '../format/date'
 import dataset from '../Dataset'
 import { Base } from './Base'
 
-import type { History, EnrichHistory } from '../types'
+import { type History, type EnrichHistory } from '../types'
 
 interface PeriodOffsetItem {
   date: Date
@@ -106,10 +109,12 @@ export class PeriodOffset extends Base {
     const i = bisectDate(this.dataset, overDate)
     const data = this.dataset[i]
     const x = this.timeLinearScale(data.date)
+    const value = data[this.type]
+
     this.overGroup
       ?.attr('transform', `translate(${x}, 0)`)
       .selectAll('.point')
-      .data([{ value: data[this.type], cases: true }])
+      .data([{ value, cases: true }])
       .join('circle')
       .classed('point', true)
       .classed('point-cases', (d) => d.cases)
@@ -117,7 +122,7 @@ export class PeriodOffset extends Base {
     this.overLine?.classed('over-line-hidden', false)
 
     this.tooltip.show({
-      data: { cases: data[this.type] < 0 ? 0 : data[this.type] },
+      data: { cases: value < 0 ? 0 : value },
       right:
         i > this.dataset.length / 2
           ? `${Number(this.width) - x + 5}px`

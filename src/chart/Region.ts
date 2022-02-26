@@ -1,23 +1,26 @@
 import 'd3-transition'
-import { max } from 'd3-array'
-import { select } from 'd3-selection'
-import { scaleBand, scaleLinear, scaleTime } from 'd3-scale'
-import { axisRight, axisBottom } from 'd3-axis'
+import { bisector, max } from 'd3-array'
+import { pointer, select, type Selection } from 'd3-selection'
+import {
+  scaleBand,
+  type ScaleBand,
+  scaleLinear,
+  type ScaleLinear,
+  scaleTime,
+  type ScaleTime,
+} from 'd3-scale'
+import { axisRight, axisBottom, type Axis } from 'd3-axis'
 import { format } from 'd3-format'
-import type { Selection, EnterElement } from 'd3-selection'
-import { area } from 'd3-shape'
-import type { Axis } from 'd3-axis'
-import type { ScaleLinear, ScaleBand, ScaleTime } from 'd3-scale'
-import type { Area } from 'd3-shape'
-import type { D3ZoomEvent } from 'd3-zoom'
+import { area, type Area } from 'd3-shape'
+import { type D3ZoomEvent } from 'd3-zoom'
 import { shortDate, serverShortToDate } from '../format/date'
 import { humanInt } from '../format/number'
 import { Base } from './Base'
 
-import type {
-  RegionData,
-  HistoryTerritory,
-  RegionDataInfoTypes,
+import {
+  type RegionData,
+  type HistoryTerritory,
+  type RegionDataInfoTypes,
 } from '../types'
 
 interface RegionHistory extends Pick<HistoryTerritory, 'date' | 'confirmed'> {
@@ -32,23 +35,13 @@ type PathSelection = Selection<
   HTMLElement,
   unknown
 >
-
-type BarSelection = Selection<
-  SVGRectElement,
-  RegionHistory,
-  SVGGElement,
-  unknown
->
-type EnterBarSelection = Selection<
-  EnterElement,
-  RegionHistory,
-  SVGGElement,
-  unknown
->
+type LineSelection = Selection<SVGLineElement, unknown, HTMLElement, unknown>
 
 export type RegionViewType = 'full' | 'inc'
 
 const int = format(',d')
+
+const bisectDate = bisector((d: RegionHistory) => d.dateTime).center
 
 export class Region extends Base {
   marginTop = 18
@@ -81,13 +74,15 @@ export class Region extends Base {
 
   private timeAxisBox?: Selection<SVGGElement, unknown, HTMLElement, unknown>
 
-  private overBarsGroup?: GroupBarSelection
-
   private confirmedBarsGroup?: GroupBarSelection
 
   private confirmedArea: Area<RegionHistory> = area()
 
   private confirmedPath?: PathSelection
+
+  private overGroup?: GroupBarSelection
+
+  private overLine?: LineSelection
 
   private _didSet = false
 
@@ -106,6 +101,64 @@ export class Region extends Base {
 
     this.renderAxes()
     this.renderBars()
+    this.initTooltip()
+  }
+
+  private initTooltip() {
+    this.overGroup = this.svg
+      .append('g')
+      .classed('over-group', true)
+      .attr('transform', `translate(0, 0)`)
+
+    this.overLine = this.overGroup
+      .append('line')
+      .classed('over-line over-line-hidden', true)
+      .attr('y1', Number(this.height) - this.marginBottom)
+      .attr('y2', 0)
+
+    this.svg
+      .on('pointerenter pointermove', this.onPointerOver.bind(this))
+      .on('pointerleave', this.onPointerLeave.bind(this))
+  }
+
+  private onPointerOver(event: PointerEvent): void {
+    const [overX] = pointer(event)
+    const overDate = this.timeLinearScale.invert(overX)
+    const i = bisectDate(this.history, overDate)
+    const data = this.history[i]
+    const x = this.timeLinearScale(data.dateTime)
+    const value = data[`confirmed${this.suffix}`]
+
+    this.overGroup
+      ?.attr('transform', `translate(${x}, 0)`)
+      .selectAll('.point')
+      .data([{ value, cases: true }])
+      .join('circle')
+      .classed('point', true)
+      .classed('point-cases', (d) => d.cases)
+      .attr('cy', (d) => this.countScale(d.value))
+    this.overLine?.classed('over-line-hidden', false)
+
+    this.tooltip.show({
+      data: {
+        cases: value < 0 ? 0 : value,
+      },
+      right:
+        i > this.history.length / 2
+          ? `${Number(this.width) - x + 5}px`
+          : 'auto',
+      left: i <= this.history.length / 2 ? `${x + 5}px` : 'auto',
+    })
+  }
+
+  private onPointerLeave(): void {
+    this.overGroup?.selectAll('.point').data([]).join('circle')
+    this.overLine?.classed('over-line-hidden', true)
+    this.tooltip.hide()
+  }
+
+  private zoomOver(): void {
+    this.overLine?.attr('y1', Number(this.height) - this.marginBottom)
   }
 
   public setDataset(data: RegionData): void {
@@ -209,10 +262,6 @@ export class Region extends Base {
     return value
   }
 
-  private getHistory() {
-    return this.history
-  }
-
   private renderAxes(): void {
     this.countAxis.tickSizeOuter(0).tickFormat(humanInt)
     this.countAxisBox = this.svg
@@ -268,15 +317,6 @@ export class Region extends Base {
   }
 
   private renderBars(): void {
-    this.overBarsGroup = this.svg
-      .append('g')
-      .attr('clip-path', `url(#clip-${this.id})`)
-
-    this.overBarsGroup
-      .selectAll<SVGRectElement, RegionHistory>('.over-bar')
-      .data(this.history, ({ date }) => date)
-      .join((enter) => this._enterOvers(enter))
-
     this.confirmedBarsGroup = this.svg
       .append('g')
       .classed('cases', true)
@@ -317,12 +357,6 @@ export class Region extends Base {
   }
 
   private updateBars(): void {
-    this.overBarsGroup
-      ?.selectAll<SVGRectElement, RegionHistory>('.over-bar')
-      .data(this.history, ({ date }) => date)
-      .join((enter) => this._enterOvers(enter))
-      .call(this._updateOvers.bind(this))
-
     this.confirmedArea
       .x((d) => this.timeLinearScale(d.dateTime))
       .y0((d) => this.countScale(d[`confirmed${this.suffix}`]))
@@ -331,55 +365,6 @@ export class Region extends Base {
       ?.datum(this.history)
       .transition('base')
       .attr('d', this.confirmedArea)
-  }
-
-  private zoomBars(): void {
-    this.overBarsGroup
-      ?.selectAll<SVGRectElement, RegionHistory>('.over-bar')
-      .call(this._zoomBars.bind(this))
-  }
-
-  private _enterOvers(enter: EnterBarSelection) {
-    const me = this
-
-    return enter
-      .append('rect')
-      .classed('over-bar', true)
-      .on('mouseover', function (_event, data) {
-        const rect = select(this)
-        const history = me.getHistory()
-        const index = history.indexOf(data)
-        const width = me.width ?? NaN
-        me.tooltip.show({
-          data: {
-            cases: data[`confirmed${me.suffix}`],
-            recover: null,
-            deaths: null,
-          },
-          right:
-            index > history.length / 2
-              ? `${width - (+rect.attr('x') + +rect.attr('width'))}px`
-              : 'auto',
-          left: index <= history.length / 2 ? `${rect.attr('x')}px` : 'auto',
-        })
-      })
-      .on('mouseout', () => {
-        me.tooltip.hide()
-      })
-  }
-
-  private _updateOvers(update: BarSelection) {
-    return update
-      .attr('x', ({ date }) => this.timeScale(date) ?? null)
-      .attr('width', this.timeScale.bandwidth())
-      .attr('y', () => this.countScale.range()[1])
-      .attr('height', () => this.innerHeight ?? null)
-  }
-
-  private _zoomBars(update: BarSelection) {
-    return update
-      .attr('x', ({ date }) => this.timeScale(date) ?? null)
-      .attr('width', this.timeScale.bandwidth())
   }
 
   protected onResize(): void {
@@ -392,13 +377,12 @@ export class Region extends Base {
 
   public onZoom(event: D3ZoomEvent<SVGElement, unknown>): void {
     if (!this._didSet) return
-    const range = [
-      this.marginLeft,
-      Number(this.width) - this.marginRight,
-    ].map((item) => event.transform.applyX(item))
+    const range = [this.marginLeft, Number(this.width) - this.marginRight].map(
+      (item) => event.transform.applyX(item),
+    )
     this.timeScale.range(range)
     this.timeAxisBox?.call(this.timeAxis)
 
-    this.zoomBars()
+    this.zoomOver()
   }
 }
