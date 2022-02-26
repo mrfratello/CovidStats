@@ -40,6 +40,14 @@ $deaths-color: #f66;
     .point-cases {
       fill: color.scale($cases-color, $lightness: -20%);
     }
+
+    .point-recover {
+      fill: color.scale($recover-color, $lightness: -20%);
+    }
+
+    .point-deaths {
+      fill: color.scale($deaths-color, $lightness: -20%);
+    }
   }
 
   .cases {

@@ -1,19 +1,24 @@
 import 'd3-transition'
-import { max } from 'd3-array'
-import { select } from 'd3-selection'
-import type { EnterElement, Selection } from 'd3-selection'
-import { scaleBand, scaleLinear, scalePow, scaleTime } from 'd3-scale'
-import type { ScaleBand, ScaleLinear, ScalePower, ScaleTime } from 'd3-scale'
-import { area, line } from 'd3-shape'
-import type { Area, Line } from 'd3-shape'
-import { axisRight, axisBottom } from 'd3-axis'
-import type { Axis } from 'd3-axis'
-import type { D3ZoomEvent } from 'd3-zoom'
+import { bisector, max } from 'd3-array'
+import { pointer, type Selection } from 'd3-selection'
+import {
+  scaleBand,
+  type ScaleBand,
+  scaleLinear,
+  type ScaleLinear,
+  scalePow,
+  type ScalePower,
+  scaleTime,
+  type ScaleTime,
+} from 'd3-scale'
+import { area, type Area, line, type Line } from 'd3-shape'
+import { axisRight, axisBottom, type Axis } from 'd3-axis'
+import { type D3ZoomEvent } from 'd3-zoom'
 import { shortDate as sortDateFn } from '../format/date'
 import dataset from '../Dataset'
 import { Base } from './Base'
 import { humanInt } from '../format/number'
-import type { EnrichHistory, HistoryDay, HistoryMoment } from '../types'
+import { type EnrichHistory } from '../types'
 
 interface DataItem extends Pick<EnrichHistory, 'date'> {
   shortDate: string
@@ -23,10 +28,9 @@ interface DataItem extends Pick<EnrichHistory, 'date'> {
 }
 
 type GroupBarSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>
-
 type BarSelection = Selection<SVGRectElement, DataItem, SVGGElement, unknown>
+type LineSelection = Selection<SVGLineElement, unknown, HTMLElement, unknown>
 type PathSelection = Selection<SVGPathElement, DataItem[], HTMLElement, unknown>
-type EnterBarSelection = Selection<EnterElement, DataItem, SVGGElement, unknown>
 
 const ChartTypeEnum = {
   All: 'all',
@@ -36,18 +40,25 @@ const ChartTypeEnum = {
 
 export type SimpleChartType = typeof ChartTypeEnum[keyof typeof ChartTypeEnum]
 
+export type SimpleScaleType = 'linear' | 'pow'
+
 type Property = 'cases' | 'recover' | 'deaths'
 type ValueFn = (prop: Property, item: EnrichHistory) => number
 
-const valueByType: Record<SimpleChartType, ValueFn> = {
-  [ChartTypeEnum.All]: (prop, item) => item[prop],
-  [ChartTypeEnum.Period]: (prop, item) =>
-    item[`${prop}Day` as keyof HistoryDay],
-  [ChartTypeEnum.AllSicks]: (prop, item) =>
-    item[`${prop}Moment` as keyof HistoryMoment],
+interface TooltipValue {
+  value: number
+  cases?: boolean
+  recover?: boolean
+  deaths?: boolean
 }
 
-export type SimpleScaleType = 'linear' | 'pow'
+const valueByType: Record<SimpleChartType, ValueFn> = {
+  [ChartTypeEnum.All]: (prop, item) => item[prop],
+  [ChartTypeEnum.Period]: (prop, item) => item[`${prop}Day`],
+  [ChartTypeEnum.AllSicks]: (prop, item) => item[`${prop}Moment`],
+}
+
+const bisectDate = bisector((d: DataItem) => d.date).center
 
 export class Simple extends Base {
   private type: SimpleChartType = ChartTypeEnum.Period
@@ -102,6 +113,10 @@ export class Simple extends Base {
 
   private deathsGroup?: GroupBarSelection
 
+  private overGroup?: GroupBarSelection
+
+  private overLine?: LineSelection
+
   private maxCount = 1
 
   constructor(selector: string) {
@@ -114,14 +129,75 @@ export class Simple extends Base {
     })
   }
 
+  private initTooltip() {
+    this.overGroup = this.svg
+      .append('g')
+      .classed('over-group', true)
+      .attr('transform', `translate(0, 0)`)
+
+    this.overLine = this.overGroup
+      .append('line')
+      .classed('over-line over-line-hidden', true)
+      .attr('y1', Number(this.height) - this.marginBottom)
+      .attr('y2', 0)
+
+    this.svg
+      .on('pointerenter pointermove', this.onPointerOver.bind(this))
+      .on('pointerleave', this.onPointerLeave.bind(this))
+  }
+
+  private onPointerOver(event: PointerEvent): void {
+    const [overX] = pointer(event)
+    const overDate = this.timeLinearScale.invert(overX)
+    const i = bisectDate(this.dataset, overDate)
+    const { cases, recover, deaths, date } = this.dataset[i]
+    const x = this.timeLinearScale(date)
+
+    this.overGroup
+      ?.attr('transform', `translate(${x}, 0)`)
+      .selectAll('.point')
+      .data<TooltipValue>([
+        { value: cases, cases: true },
+        { value: recover, recover: true },
+        { value: deaths, deaths: true },
+      ])
+      .join('circle')
+      .classed('point', true)
+      .classed('point-cases', (d) => !!d.cases)
+      .classed('point-recover', (d) => !!d.recover)
+      .classed('point-deaths', (d) => !!d.deaths)
+      .attr('cy', (d) => this.countScale(d.value))
+    this.overLine?.classed('over-line-hidden', false)
+
+    this.tooltip.show({
+      data: { cases, recover, deaths },
+      right:
+        i > this.dataset.length / 2
+          ? `${Number(this.width) - x + 5}px`
+          : 'auto',
+      left: i <= this.dataset.length / 2 ? `${x + 5}px` : 'auto',
+    })
+  }
+
+  private onPointerLeave(): void {
+    this.overGroup?.selectAll('.point').data([]).join('circle')
+    this.overLine?.classed('over-line-hidden', true)
+    this.tooltip.hide()
+  }
+
+  private zoomOver(): void {
+    this.overLine?.attr('y1', Number(this.height) - this.marginBottom)
+  }
+
   render(data: EnrichHistory[]): void {
     this.pureDataset = data
 
     this.prepareDataset()
     this.updateDomains()
     this.renderAxes()
-    this.updateAxes()
     this.renderBars()
+    this.initTooltip()
+    this.updateAxes()
     this.updateBars()
   }
 
@@ -254,16 +330,6 @@ export class Simple extends Base {
   }
 
   private renderBars() {
-    this.overBarsGroup = this.svg
-      .append('g')
-      .attr('clip-path', `url(#clip-${this.id})`)
-
-    this.overBars = this.overBarsGroup
-      .selectAll<SVGRectElement, DataItem>('.over-bar')
-      .data(this.dataset, ({ shortDate }) => shortDate)
-      .join((enter) => this._enterOvers(enter))
-      .call(this._updateOvers.bind(this))
-
     this.caseGroup = this.svg
       .append('g')
       .classed('cases', true)
@@ -299,11 +365,6 @@ export class Simple extends Base {
   }
 
   private updateBars() {
-    this.overBarsGroup
-      ?.selectAll<SVGRectElement, DataItem>('.over-bar')
-      .data(this.dataset, ({ shortDate }) => shortDate)
-      .call(this._updateOvers.bind(this))
-
     this.caseArea
       .x((d) => this.timeLinearScale(d.date))
       .y0((d) => this.countScale(d.cases))
@@ -328,56 +389,6 @@ export class Simple extends Base {
       ?.datum<DataItem[]>(this.dataset)
       .transition('base')
       .attr('d', this.deathsLine)
-  }
-
-  private zoomBars() {
-    this.overBars
-      ?.selectAll<SVGRectElement, DataItem>('.over-bar')
-      .call(this._zoomBars.bind(this))
-  }
-
-  private _enterOvers(enter: EnterBarSelection) {
-    const me = this
-    return enter
-      .append('rect')
-      .classed('over-bar', true)
-      .on('mouseover', function (_event, data) {
-        const index = me.dataset.indexOf(data)
-        const rect = select(this)
-        const width = me.width ?? NaN
-        me.tooltip.show({
-          data: {
-            cases: data.cases,
-            recover: me.type !== ChartTypeEnum.AllSicks ? data.recover : null,
-            deaths: me.type !== ChartTypeEnum.AllSicks ? data.deaths : null,
-          },
-          right:
-            index > me.dataset.length / 2
-              ? `${width - (+rect.attr('x') + +rect.attr('width'))}px`
-              : 'auto',
-          left: index <= me.dataset.length / 2 ? `${rect.attr('x')}px` : 'auto',
-        })
-      })
-      .on('mouseout', () => {
-        me.tooltip.hide()
-      })
-  }
-
-  private _updateOvers(update: BarSelection) {
-    return update
-      .attr('x', ({ shortDate }) => this.timeScale(shortDate) ?? null)
-      .attr('width', this.timeScale.bandwidth())
-      .attr('y', this.countScale.range()[1])
-      .attr('height', this.innerHeight ?? null)
-  }
-
-  private _zoomBars(update: BarSelection, widthScale = 1) {
-    const bandWidth = this.timeScale.bandwidth() * widthScale
-    const dx = this.timeScale.bandwidth() - bandWidth
-
-    return update
-      .attr('x', ({ shortDate }) => this.timeScale(shortDate) ?? NaN + dx)
-      .attr('width', bandWidth)
   }
 
   private onUpdateOptions() {
@@ -415,7 +426,7 @@ export class Simple extends Base {
       this.timeScale.range(range)
       this.timeAxisBox?.call(this.timeAxis)
 
-      this.zoomBars()
+      this.zoomOver()
     }
   }
 }
