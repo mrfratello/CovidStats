@@ -3,6 +3,7 @@
 $cases-color: #fc3;
 $recover-color: #3c9;
 $deaths-color: #f66;
+$tooltip-line-color: #bcbaba;
 
 #chart {
   position: relative;
@@ -25,7 +26,7 @@ $deaths-color: #f66;
 
   .over-group {
     .over-line {
-      stroke: #bcbaba;
+      stroke: $tooltip-line-color;
       stroke-width: 0.5;
     }
 
@@ -77,30 +78,29 @@ $deaths-color: #f66;
 }
 
 .chart-tooltip {
-  position: absolute;
   display: none;
-  z-index: 100;
   font-size: 12px;
-  line-height: 1;
-  background: rgb(255 255 255 / 80%);
-  padding: 3px;
-  text-align: right;
-  top: 0;
 
   &.active {
     display: block;
   }
 
+  .rect {
+    stroke: $tooltip-line-color;
+    stroke-width: 0.5;
+    fill: none;
+  }
+
   .cases {
-    color: $cases-color;
+    fill: $cases-color;
   }
 
   .recover {
-    color: $recover-color;
+    fill: $recover-color;
   }
 
   .deaths {
-    color: $deaths-color;
+    fill: $deaths-color;
   }
 }
 

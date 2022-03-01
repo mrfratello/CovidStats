@@ -17,8 +17,9 @@ import { type D3ZoomEvent } from 'd3-zoom'
 import { shortDate as sortDateFn } from '../format/date'
 import dataset from '../Dataset'
 import { Base } from './Base'
+import { Tooltip } from '../Tooltip'
 import { humanInt } from '../format/number'
-import { type EnrichHistory } from '../types'
+import { type EnrichHistory, type TooltipValue } from '../types'
 
 interface DataItem extends Pick<EnrichHistory, 'date'> {
   shortDate: string
@@ -28,7 +29,6 @@ interface DataItem extends Pick<EnrichHistory, 'date'> {
 }
 
 type GroupBarSelection = Selection<SVGGElement, unknown, HTMLElement, unknown>
-type BarSelection = Selection<SVGRectElement, DataItem, SVGGElement, unknown>
 type LineSelection = Selection<SVGLineElement, unknown, HTMLElement, unknown>
 type PathSelection = Selection<SVGPathElement, DataItem[], HTMLElement, unknown>
 
@@ -44,13 +44,6 @@ export type SimpleScaleType = 'linear' | 'pow'
 
 type Property = 'cases' | 'recover' | 'deaths'
 type ValueFn = (prop: Property, item: EnrichHistory) => number
-
-interface TooltipValue {
-  value: number
-  cases?: boolean
-  recover?: boolean
-  deaths?: boolean
-}
 
 const valueByType: Record<SimpleChartType, ValueFn> = {
   [ChartTypeEnum.All]: (prop, item) => item[prop],
@@ -90,10 +83,6 @@ export class Simple extends Base {
   private timeAxis: Axis<string> = axisBottom<string>(this.timeScale)
 
   private timeAxisBox?: Selection<SVGGElement, unknown, HTMLElement, unknown>
-
-  private overBarsGroup?: GroupBarSelection
-
-  private overBars?: BarSelection
 
   private caseArea: Area<DataItem> = area()
 
@@ -152,30 +141,28 @@ export class Simple extends Base {
     const i = bisectDate(this.dataset, overDate)
     const { cases, recover, deaths, date } = this.dataset[i]
     const x = this.timeLinearScale(date)
+    const tooltipValues: TooltipValue[] = [
+      { value: cases, className: 'cases' },
+      { value: recover, className: 'recover' },
+      { value: deaths, className: 'deaths' },
+    ]
 
     this.overGroup
       ?.attr('transform', `translate(${x}, 0)`)
       .selectAll('.point')
-      .data<TooltipValue>([
-        { value: cases, cases: true },
-        { value: recover, recover: true },
-        { value: deaths, deaths: true },
-      ])
+      .data(tooltipValues)
       .join('circle')
       .classed('point', true)
-      .classed('point-cases', (d) => !!d.cases)
-      .classed('point-recover', (d) => !!d.recover)
-      .classed('point-deaths', (d) => !!d.deaths)
+      .classed('point-cases', Tooltip.isCases)
+      .classed('point-recover', Tooltip.isRecover)
+      .classed('point-deaths', Tooltip.isDeaths)
       .attr('cy', (d) => this.countScale(d.value))
     this.overLine?.classed('over-line-hidden', false)
 
     this.tooltip.show({
-      data: { cases, recover, deaths },
-      right:
-        i > this.dataset.length / 2
-          ? `${Number(this.width) - x + 5}px`
-          : 'auto',
-      left: i <= this.dataset.length / 2 ? `${x + 5}px` : 'auto',
+      data: tooltipValues,
+      offset: x,
+      isRight: i <= this.dataset.length / 2,
     })
   }
 

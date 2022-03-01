@@ -64,3 +64,8 @@ export interface Data {
   data: EnrichHistory[]
   regions: InfoData['items']
 }
+
+export interface TooltipValue {
+  value: number
+  className: 'cases' | 'recover' | 'deaths'
+}

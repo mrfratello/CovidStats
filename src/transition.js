@@ -7,4 +7,8 @@ export const barTransition = transition('base')
   .ease(easeCubicOut)
   .duration(DURATION)
 
+export const fastTransition = transition('fast')
+  .ease(easeCubicOut)
+  .duration(100)
+
 export default barTransition

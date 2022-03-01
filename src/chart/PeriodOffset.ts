@@ -17,7 +17,7 @@ import { shortDate } from '../format/date'
 import dataset from '../Dataset'
 import { Base } from './Base'
 
-import { type History, type EnrichHistory } from '../types'
+import { type History, type EnrichHistory, type TooltipValue } from '../types'
 
 interface PeriodOffsetItem {
   date: Date
@@ -40,6 +40,8 @@ const bisectDate = bisector((d: PeriodOffsetItem) => d.date).center
 
 export class PeriodOffset extends Base {
   marginBottom = 80
+
+  marginTop = 20
 
   lossPercent = 1.04
 
@@ -110,24 +112,21 @@ export class PeriodOffset extends Base {
     const data = this.dataset[i]
     const x = this.timeLinearScale(data.date)
     const value = data[this.type]
+    const tooltipValues: TooltipValue[] = [{ value, className: 'cases' }]
 
     this.overGroup
       ?.attr('transform', `translate(${x}, 0)`)
       .selectAll('.point')
-      .data([{ value, cases: true }])
+      .data(tooltipValues)
       .join('circle')
-      .classed('point', true)
-      .classed('point-cases', (d) => d.cases)
+      .classed('point point-cases', true)
       .attr('cy', (d) => this.countScale(d.value))
     this.overLine?.classed('over-line-hidden', false)
 
     this.tooltip.show({
-      data: { cases: value < 0 ? 0 : value },
-      right:
-        i > this.dataset.length / 2
-          ? `${Number(this.width) - x + 5}px`
-          : 'auto',
-      left: i <= this.dataset.length / 2 ? `${x + 5}px` : 'auto',
+      data: tooltipValues,
+      offset: x,
+      isRight: i <= this.dataset.length / 2,
     })
   }
 

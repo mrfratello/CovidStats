@@ -22,7 +22,7 @@ export abstract class Base {
 
   protected marginBottom = 30
 
-  protected marginTop = 42
+  protected marginTop = 44
 
   protected container: Selection<HTMLElement, unknown, HTMLElement, unknown>
 

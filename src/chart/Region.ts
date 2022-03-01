@@ -21,6 +21,7 @@ import {
   type RegionData,
   type HistoryTerritory,
   type RegionDataInfoTypes,
+  type TooltipValue,
 } from '../types'
 
 interface RegionHistory extends Pick<HistoryTerritory, 'date' | 'confirmed'> {
@@ -44,7 +45,7 @@ const int = format(',d')
 const bisectDate = bisector((d: RegionHistory) => d.dateTime).center
 
 export class Region extends Base {
-  marginTop = 18
+  marginTop = 20
 
   maxTickWidth = 60
 
@@ -126,28 +127,25 @@ export class Region extends Base {
     const overDate = this.timeLinearScale.invert(overX)
     const i = bisectDate(this.history, overDate)
     const data = this.history[i]
+    if (!data) return
+
     const x = this.timeLinearScale(data.dateTime)
     const value = data[`confirmed${this.suffix}`]
+    const tooltipValues: TooltipValue[] = [{ value, className: 'cases' }]
 
     this.overGroup
       ?.attr('transform', `translate(${x}, 0)`)
       .selectAll('.point')
-      .data([{ value, cases: true }])
+      .data(tooltipValues)
       .join('circle')
-      .classed('point', true)
-      .classed('point-cases', (d) => d.cases)
+      .classed('point point-cases', true)
       .attr('cy', (d) => this.countScale(d.value))
     this.overLine?.classed('over-line-hidden', false)
 
     this.tooltip.show({
-      data: {
-        cases: value < 0 ? 0 : value,
-      },
-      right:
-        i > this.history.length / 2
-          ? `${Number(this.width) - x + 5}px`
-          : 'auto',
-      left: i <= this.history.length / 2 ? `${x + 5}px` : 'auto',
+      data: tooltipValues,
+      offset: x,
+      isRight: i <= this.history.length / 2,
     })
   }
 
